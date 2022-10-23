@@ -146,8 +146,17 @@ end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 	self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-  self:drawTextureScaledAspect2(item.item:getTexture(), 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
-	self:drawText(item.text .. " (" .. self.parent.container:getCountType(item.item:getType()) .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
+  local icon
+  local count
+  if instanceof(item.item, 'InventoryItem') then
+    icon = item.item:getTexture()
+    count = self.parent.container:getCountType(item.item:getType())
+  else
+    icon = item.item:getNormalTexture()
+    count = 1
+  end
+  self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
+	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
   --self:drawText(self.itemPrices[item.item:getType()], self:getWidth() - 75, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
 
 	y = y + item.height
@@ -155,7 +164,7 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISEditPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[item:getType()] and item:getFullType() ~= SandboxVars.PlayerShops.CurrencyItem then
+  if not self.itemList.itemPrices[item:getType()] and item:getType() ~= SandboxVars.PlayerShops.CurrencyItem then
     self.itemList.itemPrices[item:getType()] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)

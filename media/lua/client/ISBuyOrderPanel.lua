@@ -76,7 +76,7 @@ function ISBuyOrderPanel:onClick(button)
         self:close()
     elseif button.internal == "SELECT" then
         local item = button.parent.datas.items[button.parent.datas.selected].item
-        ISEditPlayerShopUI.instance:addShopItem(item:InstanceItem(item:getTypeString()))
+        ISEditPlayerShopUI.instance:addShopItem(item)
         self:close()
     end
 end
