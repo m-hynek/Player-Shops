@@ -58,7 +58,7 @@ function ISSellModal:doPayment()
   for i = 0, items:size() - 1 do
     local item = items:get(i)
     self.container:Remove(item)
-    inventory:addItemOnServer(item)
+    self.container:removeItemOnServer(item)
     inventory:AddItem(item)
   end
 end
@@ -67,7 +67,8 @@ function ISSellModal:doPurchase()
   local inventory = getPlayer():getInventory()
   for i = 1, tonumber(self.quantityEntry:getText()) do
     local item = inventory:getFirstType(self.itemType)
-    inventory:removeItemOnServer(item)
+    inventory:Remove(item)
+    self.container:addItemOnServer(item)
     self.container:AddItem(item)
   end
 end
@@ -115,7 +116,7 @@ function ISSellModal:new(x, y, width, height, container, item, price)
     o.itemName = item:getDisplayName()
     o.itemType = item:getType()
     o.texture = item:getTexture()
-    o.price = price
+    o.price = price * -1
     return o
 end
 
