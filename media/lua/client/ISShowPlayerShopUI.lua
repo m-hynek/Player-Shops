@@ -28,15 +28,9 @@ function ISShowPlayerShopUI:render()
 
     if self.itemList.mouseoverselected == -1 then
       self.buyButton:setVisible(false)
-      self.sellButton:setVisible(false)
     else
-      if self.itemList.mouseoverselected.price > 0 then
-        self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
-        self.buyButton:setVisible(true)
-      else
-        self.sellButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
-        self.sellButton:setVisible(true)
-      end
+      self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
+      self.buyButton:setVisible(true)
     end
 end
 
@@ -120,14 +114,6 @@ function ISShowPlayerShopUI:create()
     self.buyButton.borderColor = self.buttonBorderColor
     self.buyButton:setVisible(false)
     self.itemList:addChild(self.buyButton)
-
-    self.sellButton = ISButton:new(self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, FONT_HGT_SMALL + 8 * FONT_SCALE, "SELL", self, ISShowPlayerShopUI.onOptionMouseDown)
-    self.sellButton.internal = "BUY"
-    self.sellButton:initialise()
-    self.sellButton:instantiate()
-    self.sellButton.borderColor = self.buttonBorderColor
-    self.sellButton:setVisible(false)
-    self.itemList:addChild(self.sellButton)
 
     z = z + height + 10 * FONT_SCALE
     self.cancel = ISButton:new(self:getWidth() - btnWid - padBottom, z, btnWid, btnHgt, getText("UI_btn_close"), self, ISShowPlayerShopUI.onOptionMouseDown)
