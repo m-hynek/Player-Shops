@@ -8,6 +8,23 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 
+local function GetType(item)
+  if instanceof(item, 'Item') then
+    return item:getName()
+  elseif instanceof(item, 'InventoryItem') then
+    return item:getType()
+  end
+  return false
+end
+
+local function GetFullType(item)
+  if instanceof(item, 'Item') then
+    return item:getFullName()
+  elseif instanceof(item, 'InventoryItem') then
+    return item:getFullType()
+  end
+  return false
+end
 
 function ISShowPlayerShopUI:initialise()
     ISPanel.initialise(self)
@@ -32,7 +49,7 @@ function ISShowPlayerShopUI:render()
       self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
       self.buyButton:setVisible(true)
       local item = self.itemList.items[self.itemList.mouseoverselected].item
-      if tonumber(self.itemList.itemPrices[item:getType()]) > 0 then
+      if tonumber(self.itemList.itemPrices[GetType(item)]) > 0 then
         self.buyButton:setTitle('BUY')
       else
         self.buyButton:setTitle('SELL')
@@ -42,9 +59,12 @@ end
 
 local function OnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
+    for i,v in ipairs(arguments[2]) do
+      ISShowPlayerShopUI.instance:addShopItem(getScriptManager():getItem(v))
+    end
     local rows = ISShowPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
-      ISShowPlayerShopUI.instance.itemList.itemPrices[v.item:getType()] = arguments[v.item:getType()]
+      ISShowPlayerShopUI.instance.itemList.itemPrices[GetType(v.item)] = arguments[1][GetType(v.item)]
     end
   end
   Events.OnServerCommand.Remove(OnServerCommand)
@@ -103,10 +123,7 @@ function ISShowPlayerShopUI:create()
     local items = self.container:getItems()
     for i = 0, items:size() - 1 do
       local item = items:get(i)
-      if not self.itemList.itemPrices[item:getType()] and item:getFullType() ~= SandboxVars.PlayerShops.CurrencyItem then
-        self.itemList.itemPrices[item:getType()] = "Loading..."
-        self.itemList:addItem(item:getDisplayName(), item)
-      end
+      self:addShopItem(item)
     end
     self.itemList:setYScroll(0)
     self.itemList.mouseoverselected = -1
@@ -132,12 +149,28 @@ end
 
 function ISShowPlayerShopUI:doDrawItem(y, item, alt)
 	self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
-  self:drawTextureScaledAspect2(item.item:getTexture(), 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
-	self:drawText(item.text .. " (" .. self.parent.container:getCountType(item.item:getType()) .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
-  self:drawText(self.itemPrices[item.item:getType()], self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, self.itemPrices[item.item:getType()]) - self.vscroll.width, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
+  local icon
+  local count
+  if instanceof(item.item, 'InventoryItem') then
+    icon = item.item:getTexture()
+    count = self.parent.container:getCountType(item.item:getType())
+  else
+    icon = item.item:getNormalTexture()
+    count = 1
+  end
+  self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
+	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
+  self:drawText(self.itemPrices[GetType(item.item)], self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, self.itemPrices[GetType(item.item)]) - self.vscroll.width, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
 
 	y = y + item.height
 	return y
+end
+
+function ISShowPlayerShopUI:addShopItem(item)
+  if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+    self.itemList.itemPrices[GetType(item)] = "Loading..."
+    self.itemList:addItem(item:getDisplayName(), item)
+  end
 end
 
 function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
@@ -154,7 +187,7 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
       self.sellModal:close()
     end
     local item = self.itemList.items[self.itemList.mouseoverselected].item
-    local price = tonumber(self.itemList.itemPrices[item:getType()])
+    local price = tonumber(self.itemList.itemPrices[GetType(item)])
     if price > 0 then
       self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
       self.buyModal:initialise()

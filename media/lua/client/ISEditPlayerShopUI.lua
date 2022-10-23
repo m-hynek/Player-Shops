@@ -7,6 +7,23 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 local inset = 2
 
+local function GetType(item)
+  if instanceof(item, 'Item') then
+    return item:getName()
+  elseif instanceof(item, 'InventoryItem') then
+    return item:getType()
+  end
+  return false
+end
+
+local function GetFullType(item)
+  if instanceof(item, 'Item') then
+    return item:getFullName()
+  elseif instanceof(item, 'InventoryItem') then
+    return item:getFullType()
+  end
+  return false
+end
 
 function ISEditPlayerShopUI:initialise()
     ISPanel.initialise(self)
@@ -32,9 +49,12 @@ end
 
 local function OnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
+    for i,v in ipairs(arguments[2]) do
+      ISEditPlayerShopUI.instance:addShopItem(getScriptManager():getItem(v))
+    end
     local rows = ISEditPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
-      v.priceEntry:setText(arguments[v.item:getType()])
+      v.priceEntry:setText(arguments[1][GetType(v.item)])
     end
   end
   Events.OnServerCommand.Remove(OnServerCommand)
@@ -164,8 +184,12 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISEditPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[item:getType()] and item:getType() ~= SandboxVars.PlayerShops.CurrencyItem then
-    self.itemList.itemPrices[item:getType()] = "Loading..."
+  local passed = false
+  if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+    if instanceof(item, 'Item') then
+      table.insert(self.virtualItems, item:getFullName())
+    end
+    self.itemList.itemPrices[GetType(item)] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
     row.priceEntry:initialise()
@@ -186,9 +210,9 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     self.shop:transmitModData()
     local itemPrices = {}
     for i, v in ipairs(self.itemList.items) do
-      itemPrices[v.item:getType()] = v.priceEntry:getText()
+      itemPrices[GetType(v.item)] = v.priceEntry:getText()
     end
-    sendClientCommand("PlayerShops", "save", itemPrices)
+    sendClientCommand("PlayerShops", "save", {itemPrices, self.virtualItems})
     self:close()
   elseif button.internal == "BUYORDER" then
     self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650)
@@ -216,6 +240,7 @@ function ISEditPlayerShopUI:new(x, y, width, height, shop, shopData)
     o.shop = shop
     o.container = shop:getContainer()
     o.shopData = shopData
+    o.virtualItems = {}
     ISEditPlayerShopUI.instance = o
     return o
 end
