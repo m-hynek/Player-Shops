@@ -1,10 +1,11 @@
 
-local ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
+ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
+local inset = 2
 
 
 function ISEditPlayerShopUI:initialise()
@@ -45,7 +46,6 @@ function ISEditPlayerShopUI:create()
     local padBottom = 10 * FONT_SCALE
 
     local z = 15 * FONT_SCALE + FONT_HGT_SMALL + 2 * FONT_SCALE
-    local inset = 2
     local height = inset + FONT_HGT_SMALL + inset
     self.nameEntry = ISTextEntryBox:new(self.shopData.name, padBottom, z, self:getWidth() - padBottom * 2, height)
     self.nameEntry:initialise()
@@ -116,18 +116,8 @@ function ISEditPlayerShopUI:create()
     local items = self.container:getItems()
     for i = 0, items:size() - 1 do
       local item = items:get(i)
-      if not self.itemList.itemPrices[item:getType()] and item:getFullType() ~= SandboxVars.PlayerShops.CurrencyItem then
-        self.itemList.itemPrices[item:getType()] = "Loading..."
-        local row = self.itemList:addItem(item:getDisplayName(), item)
-        row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
-        row.priceEntry:initialise()
-        row.priceEntry:instantiate()
-        row.priceEntry:setMaxTextLength(10)
-        row.priceEntry:setOnlyNumbers(true)
-        self.itemList:addChild(row.priceEntry)
-      end
+      self:addShopItem(item)
     end
-    self.itemList:setYScroll(0)
     Events.OnServerCommand.Add(OnServerCommand)
     sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.itemList.itemPrices})
 
@@ -145,6 +135,13 @@ function ISEditPlayerShopUI:create()
     self.cancel:instantiate()
     self.cancel.borderColor = self.buttonBorderColor
     self:addChild(self.cancel)
+
+    self.buyOrder = ISButton:new((self:getWidth() - btnWid) / 2, z, btnWid, btnHgt, 'BUY ORDER', self, ISEditPlayerShopUI.onOptionMouseDown)
+    self.buyOrder.internal = "BUYORDER"
+    self.buyOrder:initialise()
+    self.buyOrder:instantiate()
+    self.buyOrder.borderColor = self.buttonBorderColor
+    self:addChild(self.buyOrder)
 end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
@@ -155,6 +152,20 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 
 	y = y + item.height
 	return y
+end
+
+function ISEditPlayerShopUI:addShopItem(item)
+  if not self.itemList.itemPrices[item:getType()] and item:getFullType() ~= SandboxVars.PlayerShops.CurrencyItem then
+    self.itemList.itemPrices[item:getType()] = "Loading..."
+    local row = self.itemList:addItem(item:getDisplayName(), item)
+    row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
+    row.priceEntry:initialise()
+    row.priceEntry:instantiate()
+    row.priceEntry:setMaxTextLength(10)
+    row.priceEntry:setOnlyNumbers(true)
+    self.itemList:addChild(row.priceEntry)
+  end
+  self.itemList:setYScroll(0)
 end
 
 function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
@@ -170,6 +181,10 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     end
     sendClientCommand("PlayerShops", "save", itemPrices)
     self:close()
+  elseif button.internal == "BUYORDER" then
+    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650)
+    self.buyOrderPanel:initialise()
+    self.buyOrderPanel:addToUIManager()
   end
 end
 
