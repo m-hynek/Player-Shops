@@ -1,3 +1,4 @@
+-- sell modal and related code is written by albion#0123, based on Browser8's code
 
 local ISSellModal = ISPanel:derive("ISSellModal")
 
@@ -32,19 +33,19 @@ function ISSellModal:createChildren()
 end
 
 function ISSellModal:onOptionMouseDown(button, x, y)
-  if button.internal == "CANCEL" then
-    self:close()
-  elseif button.internal == "SELL" then
-    if tonumber(self.quantityEntry:getText()) > self.container:getCountType(self.itemType) then
-      self.noticeText = "Invalid quantity."
-    elseif self:hasCurrency() then
-      self:doPayment()
-      self:doPurchase()
-      self:close()
-    else
-      self.noticeText = "Not enough currency."
+    if button.internal == "CANCEL" then
+        self:close()
+    elseif button.internal == "SELL" then
+        if tonumber(self.quantityEntry:getText()) > getPlayer():getInventory():getCountType(self.itemType) then
+            self.noticeText = "Invalid quantity."
+        elseif self:hasCurrency() then
+            self:doPayment()
+            self:doPurchase()
+            self:close()
+        else
+            self.noticeText = "Not enough currency."
+        end
     end
-  end
 end
 
 function ISSellModal:hasCurrency()
