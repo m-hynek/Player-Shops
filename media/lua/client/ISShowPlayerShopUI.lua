@@ -31,6 +31,12 @@ function ISShowPlayerShopUI:render()
     else
       self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
       self.buyButton:setVisible(true)
+      local item = self.itemList.items[self.itemList.mouseoverselected].item
+      if tonumber(self.itemList.itemPrices[item:getType()]) > 0 then
+        self.buyButton:setTitle('BUY')
+      else
+        self.buyButton:setTitle('SELL')
+      end
     end
 end
 
@@ -144,10 +150,20 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
     if self.buyModal then
       self.buyModal:close()
     end
+    if self.sellModal then
+      self.sellModal:close()
+    end
     local item = self.itemList.items[self.itemList.mouseoverselected].item
-    self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, self.itemList.itemPrices[item:getType()])
-    self.buyModal:initialise()
-    self.buyModal:addToUIManager()
+    local price = tonumber(self.itemList.itemPrices[item:getType()])
+    if price > 0 then
+      self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
+      self.buyModal:initialise()
+      self.buyModal:addToUIManager()
+    else
+      self.sellModal = ISSellModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
+      self.sellModal:initialise()
+      self.sellModal:addToUIManager()
+    end
   end
 end
 
