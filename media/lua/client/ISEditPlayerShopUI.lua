@@ -186,9 +186,6 @@ end
 function ISEditPlayerShopUI:addShopItem(item)
   local passed = false
   if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
-    if instanceof(item, 'Item') then
-      table.insert(self.virtualItems, item:getName())
-    end
     self.itemList.itemPrices[GetType(item)] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
@@ -209,13 +206,17 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     self.shopData.description = self.descriptionEntry:getText()
     self.shop:transmitModData()
     local itemPrices = {}
+    local virtualItems = {}
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
-      if not (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0) then
+      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
         itemPrices[GetType(v.item)] = price
+        if instanceof(v.item, 'Item') then
+          table.insert(virtualItems, v.item:getName())
+        end
       end
     end
-    sendClientCommand("PlayerShops", "save", {itemPrices, self.virtualItems})
+    sendClientCommand("PlayerShops", "save", {itemPrices, virtualItems})
     self:close()
   elseif button.internal == "BUYORDER" then
     self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650)
@@ -243,7 +244,6 @@ function ISEditPlayerShopUI:new(x, y, width, height, shop, shopData)
     o.shop = shop
     o.container = shop:getContainer()
     o.shopData = shopData
-    o.virtualItems = {}
     ISEditPlayerShopUI.instance = o
     return o
 end
