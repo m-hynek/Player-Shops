@@ -187,7 +187,7 @@ function ISEditPlayerShopUI:addShopItem(item)
   local passed = false
   if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if instanceof(item, 'Item') then
-      table.insert(self.virtualItems, item:getFullName())
+      table.insert(self.virtualItems, item:getName())
     end
     self.itemList.itemPrices[GetType(item)] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
