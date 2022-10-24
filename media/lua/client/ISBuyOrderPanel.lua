@@ -171,10 +171,6 @@ function ISBuyOrderPanel:drawDatas(y, item, alt)
     return y + self.itemheight
 end
 
-function ISItemsListTable:update()
-    self.datas.doDrawItem = self.drawDatas
-end
-
 function ISBuyOrderPanel:prerender()
     local z = 20
     local splitPoint = 100

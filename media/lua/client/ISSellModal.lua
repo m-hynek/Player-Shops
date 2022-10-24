@@ -115,8 +115,8 @@ function ISSellModal:new(x, y, width, height, container, item, price)
     o.moveWithMouse = true
     o.container = container
     o.itemName = item:getDisplayName()
-    o.itemType = item:getType()
-    o.texture = item:getTexture()
+    o.itemType = item:getName()
+    o.texture = item:getNormalTexture()
     o.price = price * -1
     return o
 end
