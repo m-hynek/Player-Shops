@@ -156,7 +156,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
     count = self.parent.container:getCountType(item.item:getType())
   else
     icon = item.item:getNormalTexture()
-    count = 1
+    count = 'Buying'
   end
   self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
 	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)

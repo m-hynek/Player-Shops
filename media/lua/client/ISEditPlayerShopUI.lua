@@ -173,7 +173,7 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
     count = self.parent.container:getCountType(item.item:getType())
   else
     icon = item.item:getNormalTexture()
-    count = 1
+    count = 'Buying'
   end
   self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
 	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
@@ -210,7 +210,10 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     self.shop:transmitModData()
     local itemPrices = {}
     for i, v in ipairs(self.itemList.items) do
-      itemPrices[GetType(v.item)] = v.priceEntry:getText()
+      local price = v.priceEntry:getText()
+      if not (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0) then
+        itemPrices[GetType(v.item)] = price
+      end
     end
     sendClientCommand("PlayerShops", "save", {itemPrices, self.virtualItems})
     self:close()
