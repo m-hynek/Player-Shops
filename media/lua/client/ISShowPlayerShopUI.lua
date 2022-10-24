@@ -49,10 +49,13 @@ function ISShowPlayerShopUI:render()
       self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
       self.buyButton:setVisible(true)
       local item = self.itemList.items[self.itemList.mouseoverselected].item
-      if tonumber(self.itemList.itemPrices[GetType(item)]) > 0 then
-        self.buyButton:setTitle('BUY')
-      else
-        self.buyButton:setTitle('SELL')
+      local price = self.itemList.itemPrices[GetType(item)]
+      if price ~= 'Loading...' then
+        if tonumber(price) > 0 then
+          self.buyButton:setTitle('BUY')
+        else
+          self.buyButton:setTitle('SELL')
+        end
       end
     end
 end
