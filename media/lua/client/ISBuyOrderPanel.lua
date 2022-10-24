@@ -1,4 +1,4 @@
--- written by albion
+-- written by albion, based on ISItemsListTable and ISItemsListViewer
 
 ISBuyOrderPanel = ISPanel:derive("ISBuyOrderPanel")
 
@@ -58,9 +58,9 @@ function ISBuyOrderPanel:initList()
         local item = self.items:get(i);
         if not (item:getObsolete() or item:isHidden()) then
             self.datas:addItem(item:getDisplayName(), item)
-            --table.insert(allItems, item)
         end
     end
+    table.sort(self.datas.items, function(a,b) return not string.sort(a.item:getDisplayName(), b.item:getDisplayName()); end);
 end
 
 function ISBuyOrderPanel:prerender()
