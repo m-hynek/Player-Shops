@@ -7,6 +7,22 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 
+local function createMoney(container, num)
+  while num > 0 do
+      local max = 0
+      local maxType = ""
+      for itemType, data in pairs(BMSATM.Money.Values) do
+          if num >= data.v then
+              max = data.v
+              maxType = itemType
+          end
+      end
+      if max == 0 then return end
+      local item = container:AddItem(maxType)
+      container:addItemOnServer(item)
+      num = num - max
+  end
+end
 
 function ISSellModal:createChildren()
   local z = 10 * FONT_SCALE + FONT_HGT_LARGE + 7 * FONT_SCALE + FONT_HGT_LARGE + 7 * FONT_SCALE
@@ -49,18 +65,41 @@ function ISSellModal:onOptionMouseDown(button, x, y)
 end
 
 function ISSellModal:hasCurrency()
-  return self.container:getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  if getActivatedMods():contains('BetterMoneySystem') then
+    return BMSATM.Money.getMoneyCountInContainer(self.container) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  else
+    return self.container:getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  end
 end
 
 function ISSellModal:doPayment()
   local inventory = getPlayer():getInventory()
   local price = tonumber(self.price) * tonumber(self.quantityEntry:getText())
-  local items = self.container:FindAndReturn(SandboxVars.PlayerShops.CurrencyItem, price)
-  for i = 0, items:size() - 1 do
-    local item = items:get(i)
-    self.container:Remove(item)
-    self.container:removeItemOnServer(item)
-    inventory:AddItem(item)
+  if getActivatedMods():contains('BetterMoneySystem') then
+    local sum = 0
+    for k,v in pairs(BMSATM.Money.Values) do
+      if sum >= price then break end
+      local items = self.container:getAllTypeRecurse(k)
+      for i = 0, items:size() - 1 do
+        if sum >= price then break end
+        sum = sum + v.v
+        local item = items:get(i)
+        self.container:Remove(item)
+        self.container:removeItemOnServer(item)
+        if sum > price then
+          createMoney(self.container, sum - price)
+        end
+      end
+    end
+    BMSATM.Money.ATM.withdrawalMoney(getPlayer(), price)
+  else
+    local items = self.container:FindAndReturn(SandboxVars.PlayerShops.CurrencyItem, price)
+    for i = 0, items:size() - 1 do
+      local item = items:get(i)
+      self.container:Remove(item)
+      self.container:removeItemOnServer(item)
+      inventory:AddItem(item)
+    end
   end
 end
 

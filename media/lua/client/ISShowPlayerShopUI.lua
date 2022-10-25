@@ -180,6 +180,7 @@ end
 
 function ISShowPlayerShopUI:addShopItem(item)
   if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+    if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
     self.itemList.itemPrices[GetType(item)] = "Loading..."
     self.itemList:addItem(item:getDisplayName(), item)
   end

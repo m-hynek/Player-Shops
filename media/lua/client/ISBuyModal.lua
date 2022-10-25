@@ -6,6 +6,39 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 
+local function getMoneyCountIncludingWallets(container)
+    local sum = 0
+    local itemsList = container:getItems()
+    for i = 0, itemsList:size()-1 do
+        local item = itemsList:get(i)
+        if item:getCategory() == "Container" then
+            sum = sum + getMoneyCountIncludingWallets(item:getItemContainer())
+        end
+        if BMSATM.Money.Wallets[item:getFullType()] then
+            sum = sum + item:getModData().moneyCount
+        elseif BMSATM.Money.Values[item:getFullType()] ~= nil then
+            sum = sum + BMSATM.Money.Values[item:getFullType()].v
+        end
+    end
+    return sum
+end
+
+local function createMoney(container, num)
+  while num > 0 do
+      local max = 0
+      local maxType = ""
+      for itemType, data in pairs(BMSATM.Money.Values) do
+          if num >= data.v then
+              max = data.v
+              maxType = itemType
+          end
+      end
+      if max == 0 then return end
+      local item = container:AddItem(maxType)
+      container:addItemOnServer(item)
+      num = num - max
+  end
+end
 
 function ISBuyModal:createChildren()
   local z = 10 * FONT_SCALE + FONT_HGT_LARGE + 7 * FONT_SCALE + FONT_HGT_LARGE + 7 * FONT_SCALE
@@ -48,18 +81,60 @@ function ISBuyModal:onOptionMouseDown(button, x, y)
 end
 
 function ISBuyModal:hasCurrency()
-  return getPlayer():getInventory():getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  if getActivatedMods():contains('BetterMoneySystem') then
+    return getMoneyCountIncludingWallets(getPlayer():getInventory()) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  else
+    return getPlayer():getInventory():getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  end
 end
 
 function ISBuyModal:doPayment()
   local inventory = getPlayer():getInventory()
   local price = tonumber(self.price) * tonumber(self.quantityEntry:getText())
-  local items = inventory:FindAndReturn(SandboxVars.PlayerShops.CurrencyItem, price)
-  for i = 0, items:size() - 1 do
-    local item = items:get(i)
-    inventory:Remove(item)
-    self.container:addItemOnServer(item)
-    self.container:AddItem(item)
+  if getActivatedMods():contains('BetterMoneySystem') then
+    -- this algorithm is a fucking monster
+    local sum = 0
+
+    for walletType,_ in pairs(BMSATM.Money.Wallets) do
+      local wallets = inventory:getAllTypeRecurse(walletType)
+      for i = 0, wallets:size() -1 do
+        wallet = wallets:get(i)
+        if wallet:getModData() then
+          if wallet:getModData().moneyCount >= price - sum then -- enough money in wallet to cover full remaining sum
+            wallet:getModData().moneyCount = wallet:getModData().moneyCount - (price - sum)
+            sum = price
+          else -- empty the wallet
+            sum = sum + wallet:getModData().moneyCount
+            wallet:getModData().moneyCount = 0
+          end
+        end
+      end
+    end
+
+    if sum < price then -- not enough money in wallets, use loose money
+      for k,v in pairs(BMSATM.Money.Values) do
+        if sum >= price then break end
+        local items = inventory:getAllTypeRecurse(k)
+        for i = 0, items:size() - 1 do
+          if sum >= price then break end
+          sum = sum + v.v
+          local item = items:get(i)
+          inventory:Remove(item)
+          if sum > price then
+            BMSATM.Money.ATM.withdrawalMoney(getPlayer(), sum - price)
+          end
+        end
+      end
+    end
+    createMoney(self.container, price)
+  else
+    local items = inventory:FindAndReturn(SandboxVars.PlayerShops.CurrencyItem, price)
+    for i = 0, items:size() - 1 do
+      local item = items:get(i)
+      inventory:Remove(item)
+      self.container:addItemOnServer(item)
+      self.container:AddItem(item)
+    end
   end
 end
 

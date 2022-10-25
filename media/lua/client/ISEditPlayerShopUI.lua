@@ -186,6 +186,7 @@ end
 function ISEditPlayerShopUI:addShopItem(item)
   local passed = false
   if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+    if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
     self.itemList.itemPrices[GetType(item)] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
