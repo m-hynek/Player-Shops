@@ -172,8 +172,8 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
       price = tostring(tonumber(price) * - 1)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
-  elseif isDebugEnabled() then
-    print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. tostring(price) or type(price))
+  elseif isDebugEnabled() and price ~= 'Loading...' then
+    print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
   end
 
 	y = y + item.height
