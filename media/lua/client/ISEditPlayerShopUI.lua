@@ -210,7 +210,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     local virtualItems = {}
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
-      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
+      if tonumber(price) and not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
         itemPrices[GetType(v.item)] = price
         if instanceof(v.item, 'Item') then
           table.insert(virtualItems, v.item:getName())

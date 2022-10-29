@@ -50,12 +50,14 @@ function ISShowPlayerShopUI:render()
       self.buyButton:setVisible(true)
       local item = self.itemList.items[self.itemList.mouseoverselected].item
       local price = self.itemList.itemPrices[GetType(item)]
-      if price ~= 'Loading...' then
+      if tonumber(price) then
         if tonumber(price) > 0 then
           self.buyButton:setTitle('BUY')
         else
           self.buyButton:setTitle('SELL')
         end
+      elseif price ~= 'Loading...' then
+        print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
       end
     end
 end
@@ -172,7 +174,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
       price = tostring(tonumber(price) * - 1)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
-  elseif isDebugEnabled() and price ~= 'Loading...' then
+  elseif price ~= 'Loading...' then
     print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
   end
 
