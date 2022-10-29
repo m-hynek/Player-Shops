@@ -165,13 +165,15 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
 	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
 
   local price = self.itemPrices[GetType(item.item)]
-  if price ~= "Loading..." then
+  if tonumber(price) then
     if tonumber(price) > 0 then
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
     else
       price = tostring(tonumber(price) * - 1)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
+  elseif isDebugEnabled() then
+    print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. tostring(price) or type(price))
   end
 
 	y = y + item.height
