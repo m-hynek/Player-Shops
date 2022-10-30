@@ -50,7 +50,8 @@ end
 local function OnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
     for i,v in ipairs(arguments[2]) do
-      ISEditPlayerShopUI.instance:addShopItem(getScriptManager():getItem(v))
+      local item = getScriptManager():getItem(v)
+      if item then ISEditPlayerShopUI.instance:addShopItem(item) end
     end
     local rows = ISEditPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
@@ -184,7 +185,6 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISEditPlayerShopUI:addShopItem(item)
-  local passed = false
   if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
     self.itemList.itemPrices[GetType(item)] = "Loading..."
@@ -210,7 +210,8 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     local virtualItems = {}
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
-      if tonumber(price) and not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
+      if not tonumber(price) then price = '0' end
+      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
         itemPrices[GetType(v.item)] = price
         if instanceof(v.item, 'Item') then
           table.insert(virtualItems, v.item:getName())

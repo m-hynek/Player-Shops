@@ -57,7 +57,11 @@ function ISShowPlayerShopUI:render()
           self.buyButton:setTitle('SELL')
         end
       elseif price ~= 'Loading...' then
-        print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+        if not GetType(item.item) then
+          print('PlayerShops: invalid item')
+        else
+          print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+        end
       end
     end
 end
@@ -65,7 +69,8 @@ end
 local function OnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
     for i,v in ipairs(arguments[2]) do
-      ISShowPlayerShopUI.instance:addShopItem(getScriptManager():getItem(v))
+      local item = getScriptManager():getItem(v)
+      if item then ISShowPlayerShopUI.instance:addShopItem(item) end
     end
     local rows = ISShowPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
@@ -175,7 +180,11 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
   elseif price ~= 'Loading...' then
-    print('PlayerShops: CRITICAL: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+    if not GetType(item.item) then
+      print('PlayerShops: invalid item')
+    else
+      print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+    end
   end
 
 	y = y + item.height

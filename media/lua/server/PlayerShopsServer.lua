@@ -3,6 +3,10 @@ if isClient() then return end
 local playerShopData
 
 local function OnInitGlobalModData(isNewGame)
+--[[	if not ModData.exists('playerShopDataVer') then
+		ModData.remove('playerShopData')
+		ModData.getOrCreate('playerShopDataVer')
+	end]]
 	playerShopData = ModData.getOrCreate("playerShopData")
 end
 
