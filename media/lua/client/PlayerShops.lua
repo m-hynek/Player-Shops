@@ -31,11 +31,12 @@ local function onCreateShop(object, player)
   end
   --newObject:createContainersFromSpriteProperties()
   local shopData = {}
-  shopData.owner = player:getUsername()
+  shopData.owner = player:getSteamID()
   shopData.name = player:getUsername() .. "'s Shop"
   newObject:getModData()["shopData"] = shopData
   square:AddSpecialObject(newObject)
   newObject:transmitCompleteItemToServer()
+  newObject:transmitModData()
   player:getInventory():Remove("ShopLedger")
 end
 
@@ -46,7 +47,13 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
     if v:getContainerCount() > 0 then
       local shopData = v:getModData()["shopData"]
       if shopData then
-        if shopData.owner == playerObj:getUsername() then
+        if not tonumber(shopData.owner) then -- convert old stores to new format
+          if shopData.owner == playerObj:getUsername() then
+            shopData.owner = playerObj:getSteamID()
+            v:transmitModData()
+          end
+        end
+        if shopData.owner == playerObj:getSteamID() then
           --edit store
           local shopOption = context:addOption("Edit Store", v, onEditShop, shopData)
         end

@@ -3,11 +3,11 @@ if isClient() then return end
 local playerShopData
 
 local function OnInitGlobalModData(isNewGame)
---[[	if not ModData.exists('playerShopDataVer') then
-		ModData.remove('playerShopData')
-		ModData.getOrCreate('playerShopDataVer')
-	end]]
 	playerShopData = ModData.getOrCreate("playerShopData")
+	if not playerShopData['version'] then
+		playerShopData = {}
+		playerShopData['version'] = 1
+	end
 end
 
 local function OnClientCommand(module, command, player, args)
@@ -23,8 +23,8 @@ local function OnClientCommand(module, command, player, args)
 			end
 	    	sendServerCommand(player, module, command, {args[2], playerShopData[args[1]].virtualItems})
 		elseif command == "save" then
-			if not playerShopData[player:getUsername()] then playerShopData[player:getUsername()] = {} end
-			local priceData = playerShopData[player:getUsername()]
+			if not playerShopData[player:getSteamID()] then playerShopData[player:getSteamID()] = {} end
+			local priceData = playerShopData[player:getSteamID()]
 			for k, v in pairs(args[1]) do
 				priceData[k] = v
 			end

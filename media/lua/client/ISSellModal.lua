@@ -154,8 +154,13 @@ function ISSellModal:new(x, y, width, height, container, item, price)
     o.moveWithMouse = true
     o.container = container
     o.itemName = item:getDisplayName()
-    o.itemType = item:getName()
-    o.texture = item:getNormalTexture()
+    if instanceof(item, 'InventoryItem') then
+      o.itemType = item:getType()
+      o.texture = item:getTexture()
+    else
+      o.itemType = item:getName()
+      o.texture = item:getNormalTexture()
+    end
     o.price = price * -1
     return o
 end

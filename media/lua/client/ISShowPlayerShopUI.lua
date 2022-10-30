@@ -58,7 +58,7 @@ function ISShowPlayerShopUI:render()
         end
       elseif price ~= 'Loading...' then
         if not GetType(item.item) then
-          print('PlayerShops: invalid item')
+          print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
         else
           print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
         end
@@ -74,7 +74,7 @@ local function OnServerCommand(module, command, arguments)
     end
     local rows = ISShowPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
-      ISShowPlayerShopUI.instance.itemList.itemPrices[GetType(v.item)] = arguments[1][GetType(v.item)]
+      ISShowPlayerShopUI.instance.itemList.itemPrices[GetType(v.item)] = arguments[1][GetType(v.item)] or '0'
     end
   end
   Events.OnServerCommand.Remove(OnServerCommand)
@@ -181,7 +181,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
     end
   elseif price ~= 'Loading...' then
     if not GetType(item.item) then
-      print('PlayerShops: invalid item')
+      print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
     else
       print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
     end
@@ -214,14 +214,18 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
     end
     local item = self.itemList.items[self.itemList.mouseoverselected].item
     local price = tonumber(self.itemList.itemPrices[GetType(item)])
-    if price > 0 then
-      self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
-      self.buyModal:initialise()
-      self.buyModal:addToUIManager()
+    if price then
+      if price > 0 then
+        self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
+        self.buyModal:initialise()
+        self.buyModal:addToUIManager()
+      else
+        self.sellModal = ISSellModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
+        self.sellModal:initialise()
+        self.sellModal:addToUIManager()
+      end
     else
-      self.sellModal = ISSellModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
-      self.sellModal:initialise()
-      self.sellModal:addToUIManager()
+      print('PlayerShops: Attempted buy/sell action on invalid priced item')
     end
   end
 end
