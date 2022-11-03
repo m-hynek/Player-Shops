@@ -66,8 +66,9 @@ function ISShowPlayerShopUI:render()
     end
 end
 
-local function OnServerCommand(module, command, arguments)
+local function ShowPlayerOnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
+    print('PlayerShops: received load response')
     for i,v in ipairs(arguments[2]) do
       local item = getScriptManager():getItem(v)
       if item then ISShowPlayerShopUI.instance:addShopItem(item) end
@@ -77,7 +78,7 @@ local function OnServerCommand(module, command, arguments)
       ISShowPlayerShopUI.instance.itemList.itemPrices[GetType(v.item)] = arguments[1][GetType(v.item)] or '0'
     end
   end
-  Events.OnServerCommand.Remove(OnServerCommand)
+  Events.OnServerCommand.Remove(ShowPlayerOnServerCommand)
 end
 
 function ISShowPlayerShopUI:create()
@@ -106,27 +107,7 @@ function ISShowPlayerShopUI:create()
     self.itemList.itemheight = FONT_HGT_MEDIUM + 5 * FONT_SCALE * 2
     self.itemList.texturePadY = (self.itemList.itemheight - FONT_HGT_MEDIUM) / 2
     self.itemList.doDrawItem = self.doDrawItem
-    self.itemList.onMouseWheel = function(self, del)
-      if not self:isVScrollBarVisible() then return true end
-      local yScroll = self.smoothScrollTargetY or self:getYScroll()
-    	local topRow = self:rowAt(0, -yScroll)
-    	if self.items[topRow] then
-    		if not self.smoothScrollTargetY then self.smoothScrollY = self:getYScroll() end
-    		local y = self:topOfItem(topRow)
-    		if del < 0 then
-    			if yScroll == -y and topRow > 1 then
-    				local prev = self:prevVisibleIndex(topRow)
-    				y = self:topOfItem(prev)
-    			end
-    			self.smoothScrollTargetY = -y
-    		else
-    			self.smoothScrollTargetY = -(y + self.items[topRow].height)
-    		end
-    	else
-    		self:setYScroll(self:getYScroll() - (del*18))
-    	end
-        return true
-    end
+    self.itemList.onMouseWheel = ISShowPlayerShopUI.onMouseWheel
     self.itemList.drawBorder = true
     self:addChild(self.itemList)
     self.itemList.itemPrices = {} --TODO refactor this
@@ -137,7 +118,8 @@ function ISShowPlayerShopUI:create()
     end
     self.itemList:setYScroll(0)
     self.itemList.mouseoverselected = -1
-    Events.OnServerCommand.Add(OnServerCommand)
+    Events.OnServerCommand.Add(ShowPlayerOnServerCommand)
+    print('PlayerShops: sent load request')
     sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.itemList.itemPrices})
 
     self.buyButton = ISButton:new(self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, FONT_HGT_SMALL + 8 * FONT_SCALE, "BUY", self, ISShowPlayerShopUI.onOptionMouseDown)
@@ -155,6 +137,28 @@ function ISShowPlayerShopUI:create()
     self.cancel:instantiate()
     self.cancel.borderColor = self.buttonBorderColor
     self:addChild(self.cancel)
+end
+
+function ISShowPlayerShopUI.onMouseWheel(self, del)
+  if not self:isVScrollBarVisible() then return true end
+  local yScroll = self.smoothScrollTargetY or self:getYScroll()
+  local topRow = self:rowAt(0, -yScroll)
+  if self.items[topRow] then
+    if not self.smoothScrollTargetY then self.smoothScrollY = self:getYScroll() end
+    local y = self:topOfItem(topRow)
+    if del < 0 then
+      if yScroll == -y and topRow > 1 then
+        local prev = self:prevVisibleIndex(topRow)
+        y = self:topOfItem(prev)
+      end
+      self.smoothScrollTargetY = -y
+    else
+      self.smoothScrollTargetY = -(y + self.items[topRow].height)
+    end
+  else
+    self:setYScroll(self:getYScroll() - (del*18))
+  end
+  return true
 end
 
 function ISShowPlayerShopUI:doDrawItem(y, item, alt)
