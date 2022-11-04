@@ -56,7 +56,7 @@ function ISShowPlayerShopUI:render()
         else
           self.buyButton:setTitle('SELL')
         end
-      elseif price ~= 'Loading...' then
+      elseif price ~= 'Loading...' and isDebugEnabled() then
         if not GetType(item.item) then
           print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
         else
@@ -68,7 +68,6 @@ end
 
 local function ShowPlayerOnServerCommand(module, command, arguments)
 	if module == "PlayerShops" and command == "load" then
-    print('PlayerShops: received load response')
     for i,v in ipairs(arguments[2]) do
       local item = getScriptManager():getItem(v)
       if item then ISShowPlayerShopUI.instance:addShopItem(item) end
@@ -119,7 +118,6 @@ function ISShowPlayerShopUI:create()
     self.itemList:setYScroll(0)
     self.itemList.mouseoverselected = -1
     Events.OnServerCommand.Add(ShowPlayerOnServerCommand)
-    print('PlayerShops: sent load request')
     sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.itemList.itemPrices})
 
     self.buyButton = ISButton:new(self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, FONT_HGT_SMALL + 8 * FONT_SCALE, "BUY", self, ISShowPlayerShopUI.onOptionMouseDown)
@@ -184,7 +182,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
   elseif price ~= 'Loading...' then
-    if not GetType(item.item) then
+    if not GetType(item.item) and isDebugEnabled() then
       print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
     else
       print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
@@ -229,7 +227,7 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
         self.sellModal:addToUIManager()
       end
     else
-      print('PlayerShops: Attempted buy/sell action on invalid priced item')
+      if isDebugEnabled() then print('PlayerShops: Attempted buy/sell action on invalid priced item') end
     end
   end
 end
