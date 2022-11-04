@@ -8,14 +8,14 @@ local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
 local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 
-local function GetType(item)
+--[[local function GetType(item)
   if instanceof(item, 'Item') then
     return item:getName()
   elseif instanceof(item, 'InventoryItem') then
     return item:getType()
   end
   return false
-end
+end]]
 
 local function GetFullType(item)
   if instanceof(item, 'Item') then
@@ -49,7 +49,7 @@ function ISShowPlayerShopUI:render()
       self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
       self.buyButton:setVisible(true)
       local item = self.itemList.items[self.itemList.mouseoverselected].item
-      local price = self.itemList.itemPrices[GetType(item)]
+      local price = self.itemList.itemPrices[GetFullType(item)]
       if tonumber(price) then
         if tonumber(price) > 0 then
           self.buyButton:setTitle('BUY')
@@ -57,10 +57,10 @@ function ISShowPlayerShopUI:render()
           self.buyButton:setTitle('SELL')
         end
       elseif price ~= 'Loading...' and isDebugEnabled() then
-        if not GetType(item.item) then
+        if not GetFullType(item.item) then
           print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
         else
-          print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+          print('PlayerShops: invalid price for item ' .. GetFullType(item.item) .. ' : ' .. (tostring(price) or type(price)))
         end
       end
     end
@@ -74,7 +74,7 @@ local function ShowPlayerOnServerCommand(module, command, arguments)
     end
     local rows = ISShowPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
-      ISShowPlayerShopUI.instance.itemList.itemPrices[GetType(v.item)] = arguments[1][GetType(v.item)] or '0'
+      ISShowPlayerShopUI.instance.itemList.itemPrices[GetFullType(v.item)] = arguments[1][GetFullType(v.item)] or '0'
     end
   end
   Events.OnServerCommand.Remove(ShowPlayerOnServerCommand)
@@ -173,7 +173,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
   self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
 	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
 
-  local price = self.itemPrices[GetType(item.item)]
+  local price = self.itemPrices[GetFullType(item.item)]
   if tonumber(price) then
     if tonumber(price) > 0 then
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
@@ -182,10 +182,10 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0, 0.7, 0, 1.0, self.font)
     end
   elseif price ~= 'Loading...' then
-    if not GetType(item.item) and isDebugEnabled() then
+    if not GetFullType(item.item) and isDebugEnabled() then
       print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
     else
-      print('PlayerShops: invalid price for item ' .. GetType(item.item) .. ' : ' .. (tostring(price) or type(price)))
+      print('PlayerShops: invalid price for item ' .. GetFullType(item.item) .. ' : ' .. (tostring(price) or type(price)))
     end
   end
 
@@ -194,9 +194,9 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISShowPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+  if not self.itemList.itemPrices[GetFullType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
-    self.itemList.itemPrices[GetType(item)] = "Loading..."
+    self.itemList.itemPrices[GetFullType(item)] = "Loading..."
     self.itemList:addItem(item:getDisplayName(), item)
   end
 end
@@ -215,7 +215,7 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
       self.sellModal:close()
     end
     local item = self.itemList.items[self.itemList.mouseoverselected].item
-    local price = tonumber(self.itemList.itemPrices[GetType(item)])
+    local price = tonumber(self.itemList.itemPrices[GetFullType(item)])
     if price then
       if price > 0 then
         self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)

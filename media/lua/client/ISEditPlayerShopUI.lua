@@ -7,14 +7,14 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 local inset = 2
 
-local function GetType(item)
+--[[local function GetType(item)
   if instanceof(item, 'Item') then
     return item:getName()
   elseif instanceof(item, 'InventoryItem') then
     return item:getType()
   end
   return false
-end
+end]]
 
 local function GetFullType(item)
   if instanceof(item, 'Item') then
@@ -55,7 +55,7 @@ local function OnServerCommand(module, command, arguments)
     end
     local rows = ISEditPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
-      v.priceEntry:setText(arguments[1][GetType(v.item)])
+      v.priceEntry:setText(arguments[1][GetFullType(v.item)])
     end
   end
   Events.OnServerCommand.Remove(OnServerCommand)
@@ -185,9 +185,9 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISEditPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[GetType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+  if not self.itemList.itemPrices[GetFullType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
-    self.itemList.itemPrices[GetType(item)] = "Loading..."
+    self.itemList.itemPrices[GetFullType(item)] = "Loading..."
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
     row.priceEntry:initialise()
@@ -211,10 +211,10 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
       if not tonumber(price) then price = '0' end
-      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetType(v.item)) == 0)) then
-        itemPrices[GetType(v.item)] = price
+      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetFullType(v.item)) == 0)) then
+        itemPrices[GetFullType(v.item)] = price
         if instanceof(v.item, 'Item') then
-          table.insert(virtualItems, v.item:getName())
+          table.insert(virtualItems, v.item:getFullName())
         end
       end
     end
