@@ -4,10 +4,6 @@ local playerShopData
 
 local function OnInitGlobalModData(isNewGame)
 	playerShopData = ModData.getOrCreate("playerShopData")
-	if not playerShopData['version'] then
-		playerShopData = {}
-		playerShopData['version'] = 1
-	end
 end
 
 local function OnClientCommand(module, command, player, args)
