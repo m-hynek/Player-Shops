@@ -54,8 +54,9 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
             v:transmitModData()
           end
         end
-        if not shopData.UUID then
+        if not shopData.UUID then -- convert old stores again lol
           shopData.UUID = getRandomUUID()
+          v:transmitModData()
         end
         if shopData.owner == playerObj:getSteamID() then
           --edit store

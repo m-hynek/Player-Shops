@@ -230,10 +230,15 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
       if not tonumber(price) then price = '0' end
-      if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetFullType(v.item)) == 0)) then
+      if instanceof(v.item, 'InventoryItem') then
         if tonumber(price) > 0 then
           itemPrices[GetFullType(v.item)] = price
         else
+          itemPrices[GetFullType(v.item)] = '0'
+        end
+      else
+        if tonumber(price) < 0 then
+          print('added to sellItems')
           sellItems[GetFullType(v.item)] = price
         end
       end
