@@ -11,10 +11,10 @@ local function createMoney(container, num)
   while num > 0 do
       local max = 0
       local maxType = ""
-      for itemType, data in pairs(BMSATM.Money.Values) do
+      for itemType, data in pairs(ProjectRP.Client.Money.Values) do
           if num >= data.v then
               max = data.v
-              maxType = itemType
+              maxType = 'PRP.' .. itemType
           end
       end
       if max == 0 then return end
@@ -65,8 +65,8 @@ function ISSellModal:onOptionMouseDown(button, x, y)
 end
 
 function ISSellModal:hasCurrency()
-  if getActivatedMods():contains('BetterMoneySystem') then
-    return BMSATM.Money.getMoneyCountInContainer(self.container) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
+  if getActivatedMods():contains('ZZZProjectRP') then
+    return ProjectRP.Client.Money.getMoneyCountInContainer(self.container) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
   else
     return self.container:getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
   end
@@ -75,9 +75,10 @@ end
 function ISSellModal:doPayment()
   local inventory = getPlayer():getInventory()
   local price = tonumber(self.price) * tonumber(self.quantityEntry:getText())
-  if getActivatedMods():contains('BetterMoneySystem') then
+
+  if getActivatedMods():contains('ZZZProjectRP') then
     local sum = 0
-    for k,v in pairs(BMSATM.Money.Values) do
+    for k,v in pairs(ProjectRP.Client.Money.Values) do
       if sum >= price then break end
       local items = self.container:getAllTypeRecurse(k)
       for i = 0, items:size() - 1 do
@@ -91,7 +92,7 @@ function ISSellModal:doPayment()
         end
       end
     end
-    BMSATM.Money.ATM.withdrawalMoney(getPlayer(), price)
+    ProjectRP.Client.Money.ATM.withdrawalMoney(getPlayer(), price)
   else
     local items = self.container:FindAndReturn(SandboxVars.PlayerShops.CurrencyItem, price)
     for i = 0, items:size() - 1 do

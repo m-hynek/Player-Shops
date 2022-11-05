@@ -8,14 +8,14 @@ local FONT_HGT_LARGE = getTextManager():getFontHeight(UIFont.Large)
 local FONT_SCALE = FONT_HGT_SMALL/14
 local inset = 2
 
---[[local function GetType(item)
+local function GetType(item)
   if instanceof(item, 'Item') then
     return item:getName()
   elseif instanceof(item, 'InventoryItem') then
     return item:getType()
   end
   return false
-end]]
+end
 
 local function GetFullType(item)
   if instanceof(item, 'Item') then
@@ -201,7 +201,7 @@ end
 
 function ISEditPlayerShopUI:addShopItem(item)
   if not hasPrice(item) and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
-    if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
+    if getActivatedMods():contains('ZZZProjectRP') and ProjectRP.Client.Money.Values[GetType(item)] then return end
     if instanceof(item, 'InventoryItem') then
       self.itemList.itemPrices[item:getFullType()] = "Loading..."
     else
