@@ -1,6 +1,7 @@
 
 local ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
 local ISBuyOrderPanel = require 'ISBuyOrderPanel'
+local ISShopTransferModal = require 'ISShopTransferModal'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -98,7 +99,7 @@ function ISEditPlayerShopUI:create()
     self:addChild(self.descriptionEntry)
 
     z = z + height + 10 * FONT_SCALE + FONT_HGT_SMALL + 2 * FONT_SCALE
-    height = self:getHeight() - z - padBottom - btnHgt - 10 * FONT_SCALE
+    height = self:getHeight() - z - padBottom - btnHgt * 2 - 10 * FONT_SCALE
     self.itemList = ISScrollingListBox:new(padBottom, z, self:getWidth() - padBottom * 2, height)
     self.itemList:initialise()
     self.itemList:instantiate()
@@ -157,7 +158,7 @@ function ISEditPlayerShopUI:create()
     Events.OnServerCommand.Add(OnServerCommand)
     sendClientCommand("PlayerShops", "load", {self.shopData.UUID, self.itemList.itemPrices})
 
-    z = z + height + 10 * FONT_SCALE
+    z = z + height + 5 * FONT_SCALE
     self.save = ISButton:new(padBottom, z, btnWid, btnHgt, getText("UI_btn_save"), self, ISEditPlayerShopUI.onOptionMouseDown)
     self.save.internal = "SAVE"
     self.save:initialise()
@@ -178,6 +179,21 @@ function ISEditPlayerShopUI:create()
     self.buyOrder:instantiate()
     self.buyOrder.borderColor = self.buttonBorderColor
     self:addChild(self.buyOrder)
+
+    z = z + btnHgt + 5 * FONT_SCALE
+    self.transfer = ISButton:new(padBottom, z, btnWid * 1.5, btnHgt, 'TRANSFER OWNERSHIP', self, ISEditPlayerShopUI.onOptionMouseDown)
+    self.transfer.internal = "TRANSFER"
+    self.transfer:initialise()
+    self.transfer:instantiate()
+    self.transfer.borderColor = self.buttonBorderColor
+    self:addChild(self.transfer)
+
+    self.coowner = ISButton:new(self:getWidth() - (btnWid * 1.5) - padBottom, z, btnWid * 1.5, btnHgt, 'MANAGE ACCESS', self, ISEditPlayerShopUI.onOptionMouseDown)
+    self.coowner.internal = "COOWNER"
+    self.coowner:initialise()
+    self.coowner:instantiate()
+    self.coowner.borderColor = self.buttonBorderColor
+    self:addChild(self.coowner)
 end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
@@ -246,15 +262,29 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     sendClientCommand("PlayerShops", "save", {self.shopData.UUID, itemPrices, sellItems})
     self:close()
   elseif button.internal == "BUYORDER" then
-    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)
-    self.buyOrderPanel:initialise()
-    self.buyOrderPanel:addToUIManager()
+    if not ISBuyOrderPanel.instance then
+      self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)
+      self.buyOrderPanel:initialise()
+      self.buyOrderPanel:addToUIManager()
+    end
+  elseif button.internal == 'TRANSFER' then
+    if not ISShopTransferModal.instance then
+      self.transferPanel = ISShopTransferModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, ISEditPlayerShopUI.instance)
+      self.transferPanel:initialise()
+      self.transferPanel:addToUIManager()
+    end
   end
 end
 
 function ISEditPlayerShopUI:close()
     self:setVisible(false)
     self:removeFromUIManager()
+    if self.buyOrderPanel then
+      self.buyOrderPanel:close()
+    end
+    if self.transferPanel then
+      self.transferPanel:close()
+    end
     ISEditPlayerShopUI.instance = nil
 end
 

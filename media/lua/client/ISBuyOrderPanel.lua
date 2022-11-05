@@ -198,6 +198,7 @@ end
 function ISBuyOrderPanel:close()
     self:setVisible(false)
     self:removeFromUIManager()
+    ISBuyOrderPanel.instance = nil
 end
 
 function ISBuyOrderPanel:new(x, y, width, height, editUI)
@@ -215,6 +216,7 @@ function ISBuyOrderPanel:new(x, y, width, height, editUI)
     o.filterWidgets = {}
     o.filterWidgetMap = {}
     o.editUI = editUI
+    ISBuyOrderPanel.instance = o
     return o
 end
 

@@ -1,9 +1,8 @@
-
 local ISEditPlayerShopUI = require "ISEditPlayerShopUI"
 local ISShowPlayerShopUI = require "ISShowPlayerShopUI"
 local UI_SCALE = getTextManager():getFontHeight(UIFont.Small)/14
 
-local function onEditShop(shop, shopData)
+local function onEditShop(shop, shopData, access)
   local storeMenu = ISEditPlayerShopUI:new((getCore():getScreenWidth() - 400 * UI_SCALE)/2, (getCore():getScreenHeight() - 600 * UI_SCALE)/2, 400 * UI_SCALE, 600 * UI_SCALE, shop, shopData)
   storeMenu:initialise()
   storeMenu:addToUIManager()
@@ -32,6 +31,7 @@ local function onCreateShop(object, player)
   --newObject:createContainersFromSpriteProperties()
   local shopData = {}
   shopData.owner = player:getSteamID()
+  shopData.coowners = {}
   shopData.name = player:getUsername() .. "'s Shop"
   shopData.UUID = getRandomUUID()
   newObject:getModData()["shopData"] = shopData
@@ -48,22 +48,23 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
     if v:getContainerCount() > 0 then
       local shopData = v:getModData()["shopData"]
       if shopData then
-        if not tonumber(shopData.owner) then -- convert old stores to new format
-          if shopData.owner == playerObj:getUsername() then
-            shopData.owner = playerObj:getSteamID()
-            v:transmitModData()
-          end
-        end
-        if not shopData.UUID then -- convert old stores again lol
+        if not shopData.UUID then -- convert old stores again
           shopData.UUID = getRandomUUID()
+          v:transmitModData()
+        end
+        if not shopData.coowners then
+          shopData.coowners = {}
           v:transmitModData()
         end
         if shopData.owner == playerObj:getSteamID() then
           --edit store
-          local shopOption = context:addOption("Edit Store", v, onEditShop, shopData)
+          local shopOption = context:addOption("Edit Store", v, onEditShop, shopData, 'owner')
+        elseif shopData.coowners[playerObj:getSteamID()] then
+          --edit store
+          local shopOption = context:addOption("Edit Store", v, onEditShop, shopData, 'coowner')
         elseif not playerObj:isAccessLevel('None') then
           --edit store
-          local shopOption = context:addOption("(ADMIN) Edit Store", v, onEditShop, shopData)
+          local shopOption = context:addOption("(ADMIN) Edit Store", v, onEditShop, shopData, 'admin')
         end
         --view store
         local shopOption = context:addOption("View Store", v, onViewShop, shopData)

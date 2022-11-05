@@ -260,6 +260,9 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
 end
 
 function ISShowPlayerShopUI:close()
+    if self.buyModal then
+      self.buyModal:close()
+    end
     self:setVisible(false)
     self:removeFromUIManager()
     ISShowPlayerShopUI.instance = nil
