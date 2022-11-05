@@ -1,6 +1,6 @@
 -- written by albion, based on ISItemsListTable and ISItemsListViewer
 
-ISBuyOrderPanel = ISPanel:derive("ISBuyOrderPanel")
+local ISBuyOrderPanel = ISPanel:derive("ISBuyOrderPanel")
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -184,7 +184,7 @@ function ISBuyOrderPanel:onClick(button)
         self:close()
     elseif button.internal == "SELECT" then
         local item = button.parent.datas.items[button.parent.datas.selected].item
-        ISEditPlayerShopUI.instance:addShopItem(item)
+        self.editUI:addShopItem(item)
         self:close()
     end
 end
@@ -200,7 +200,7 @@ function ISBuyOrderPanel:close()
     self:removeFromUIManager()
 end
 
-function ISBuyOrderPanel:new(x, y, width, height)
+function ISBuyOrderPanel:new(x, y, width, height, editUI)
     local o = {}
     x = getCore():getScreenWidth() / 2 - (width / 2)
     y = getCore():getScreenHeight() / 2 - (height / 2)
@@ -214,5 +214,8 @@ function ISBuyOrderPanel:new(x, y, width, height)
     o.moveWithMouse = true
     o.filterWidgets = {}
     o.filterWidgetMap = {}
+    o.editUI = editUI
     return o
 end
+
+return ISBuyOrderPanel

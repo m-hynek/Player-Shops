@@ -1,5 +1,6 @@
 
-ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
+local ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
+local ISBuyOrderPanel = require 'ISBuyOrderPanel'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -221,7 +222,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     sendClientCommand("PlayerShops", "save", {itemPrices, virtualItems})
     self:close()
   elseif button.internal == "BUYORDER" then
-    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650)
+    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, self)
     self.buyOrderPanel:initialise()
     self.buyOrderPanel:addToUIManager()
   end
