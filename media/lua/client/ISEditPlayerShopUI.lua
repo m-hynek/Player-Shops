@@ -51,13 +51,16 @@ end
 local function OnServerCommand(module, command, arguments)
 	if module ~= "PlayerShops" then return end
   if command == "load" then
-    for i,v in ipairs(arguments[2]) do
-      local item = getScriptManager():getItem(v)
-      if item then ISEditPlayerShopUI.instance:addShopItem(item) end
-    end
     local rows = ISEditPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
       v.priceEntry:setText(arguments[1][GetFullType(v.item)])
+    end
+    for item,price in pairs(arguments[2]) do
+      local instance = getScriptManager():getItem(item)
+      if instance then
+        ISEditPlayerShopUI.instance:addShopItem(instance)
+        ISEditPlayerShopUI.instance.itemList.items[#ISEditPlayerShopUI.instance.itemList.items].priceEntry:setText(price)
+      end
     end
   end
   Events.OnServerCommand.Remove(OnServerCommand)
@@ -209,18 +212,19 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     self.shopData.description = self.descriptionEntry:getText()
     self.shop:transmitModData()
     local itemPrices = {}
-    local virtualItems = {}
+    local sellItems = {}
     for i, v in ipairs(self.itemList.items) do
       local price = v.priceEntry:getText()
       if not tonumber(price) then price = '0' end
       if not (price == '0' or price == 'Loading...' or (tonumber(price) > 0 and self.container:getCountType(GetFullType(v.item)) == 0)) then
-        itemPrices[GetFullType(v.item)] = price
-        if instanceof(v.item, 'Item') then
-          table.insert(virtualItems, v.item:getFullName())
+        if tonumber(price) > 0 then
+          itemPrices[GetFullType(v.item)] = price
+        else
+          sellItems[GetFullType(v.item)] = price
         end
       end
     end
-    sendClientCommand("PlayerShops", "save", {self.shopData.owner, self.shopData.UUID, itemPrices, virtualItems})
+    sendClientCommand("PlayerShops", "save", {self.shopData.owner, self.shopData.UUID, itemPrices, sellItems})
     self:close()
   elseif button.internal == "BUYORDER" then
     self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)

@@ -14,9 +14,6 @@ local function OnClientCommand(module, command, player, args)
 			for k, v in pairs(args[3]) do
 				args[3][k] = playerShopData[args[1]][k] or "0"
 			end
-			for _,v in ipairs(playerShopData[args[2]].sellItems) do
-				args[3][v] = playerShopData[args[1]][v] or "0"
-			end
 	    	sendServerCommand(player, module, command, {args[3], playerShopData[args[2]].sellItems})
 		elseif command == "save" then
 			local owner = args[1]

@@ -69,13 +69,16 @@ end
 local function ShowPlayerOnServerCommand(module, command, arguments)
 	if module ~= "PlayerShops" then return end
   if command == "load" then
-    for i,v in ipairs(arguments[2]) do
-      local item = getScriptManager():getItem(v)
-      if item then ISShowPlayerShopUI.instance:addShopItem(item) end
-    end
     local rows = ISShowPlayerShopUI.instance.itemList.items
     for i, v in ipairs(rows) do
       ISShowPlayerShopUI.instance.itemList.itemPrices[GetFullType(v.item)] = arguments[1][GetFullType(v.item)] or '0'
+    end
+    for item,price in pairs(arguments[2]) do
+      local instance = getScriptManager():getItem(item)
+      if instance then
+        ISShowPlayerShopUI.instance:addShopItem(instance)
+        ISShowPlayerShopUI.instance.itemList.itemPrices[item] = price
+      end
     end
   end
   Events.OnServerCommand.Remove(ShowPlayerOnServerCommand)
