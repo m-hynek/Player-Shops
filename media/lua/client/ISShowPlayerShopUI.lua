@@ -136,7 +136,7 @@ function ISShowPlayerShopUI:create()
     self.itemList:setYScroll(0)
     self.itemList.mouseoverselected = -1
     Events.OnServerCommand.Add(ShowPlayerOnServerCommand)
-    sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.shopData.UUID, self.itemList.itemPrices})
+    sendClientCommand("PlayerShops", "load", {self.shopData.UUID, self.itemList.itemPrices})
 
     self.buyButton = ISButton:new(self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, FONT_HGT_SMALL + 8 * FONT_SCALE, "BUY", self, ISShowPlayerShopUI.onOptionMouseDown)
     self.buyButton.internal = "BUY"

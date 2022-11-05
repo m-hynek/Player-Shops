@@ -9,23 +9,25 @@ end
 local function OnClientCommand(module, command, player, args)
 	if module == "PlayerShops" then
 		if command == "load" then
-			if not playerShopData[args[1]] then playerShopData[args[1]] = {} end
-			if not playerShopData[args[2]] then playerShopData[args[2]] = {} end
-			for k, v in pairs(args[3]) do
-				args[3][k] = playerShopData[args[1]][k] or "0"
+			local UUID = args[1]
+			if not playerShopData[UUID] then playerShopData[UUID] = {} end
+			if not playerShopData[UUID].buyItems then playerShopData[UUID].buyItems = {} end
+			local priceData = playerShopData[UUID]
+			local items = args[2]
+			for item, _ in pairs(items) do
+				items[item] = priceData.buyItems[item] or "0"
 			end
-	    	sendServerCommand(player, module, command, {args[3], playerShopData[args[2]].sellItems})
+	    	sendServerCommand(player, module, command, {items, priceData.sellItems})
 		elseif command == "save" then
-			local owner = args[1]
-			if not playerShopData[owner] then playerShopData[owner] = {} end
-			local priceData = playerShopData[owner]
-			local prices = args[3]
-			for k, v in pairs(prices) do
-				priceData[k] = v
+			local UUID = args[1]
+			if not playerShopData[UUID] then playerShopData[UUID] = {} end
+			if not playerShopData[UUID].buyItems then playerShopData[UUID].buyItems = {} end
+			local priceData = playerShopData[UUID]
+			local prices = args[2]
+			for item, price in pairs(prices) do
+				priceData.buyItems[item] = price
 			end
-			local containerUUID = args[2]
-			if not playerShopData[containerUUID] then playerShopData[containerUUID] = {} end
-			playerShopData[containerUUID].sellItems = args[4]
+			priceData.sellItems = args[3]
 		end
 	end
 end
