@@ -26,6 +26,15 @@ local function GetFullType(item)
   return false
 end
 
+local function hasPrice(item)
+  if instanceof(item, 'InventoryItem') then
+    return ISEditPlayerShopUI.instance.itemList.itemPrices[item:getFullType()]
+  elseif instanceof(item, 'Item') then
+    return ISEditPlayerShopUI.instance.itemList.sellItems[item:getFullName()]
+  end
+  return false
+end
+
 function ISEditPlayerShopUI:initialise()
     ISPanel.initialise(self)
     self:create()
@@ -139,6 +148,7 @@ function ISEditPlayerShopUI:create()
     self.itemList.drawBorder = true
     self:addChild(self.itemList)
     self.itemList.itemPrices = {}
+    self.itemList.sellItems = {}
     local items = self.container:getItems()
     for i = 0, items:size() - 1 do
       local item = items:get(i)
@@ -190,9 +200,13 @@ function ISEditPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISEditPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[GetFullType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+  if not hasPrice(item) and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
-    self.itemList.itemPrices[GetFullType(item)] = "Loading..."
+    if instanceof(item, 'InventoryItem') then
+      self.itemList.itemPrices[item:getFullType()] = "Loading..."
+    else
+      self.itemList.sellItems[item:getFullName()] = true
+    end
     local row = self.itemList:addItem(item:getDisplayName(), item)
     row.priceEntry = ISTextEntryBox:new("Loading...", self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, inset + FONT_HGT_SMALL + inset)
     row.priceEntry:initialise()

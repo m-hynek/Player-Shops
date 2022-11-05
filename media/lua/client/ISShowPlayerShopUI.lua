@@ -26,11 +26,19 @@ local function GetFullType(item)
   return false
 end
 
+local function hasPrice(item)
+  if instanceof(item, 'InventoryItem') then
+    return ISShowPlayerShopUI.instance.itemList.itemPrices[item:getFullType()]
+  elseif instanceof(item, 'Item') then
+    return ISShowPlayerShopUI.instance.itemList.sellPrices[item:getFullName()]
+  end
+  return false
+end
+
 function ISShowPlayerShopUI:initialise()
     ISPanel.initialise(self)
     self:create()
 end
-
 
 function ISShowPlayerShopUI:setVisible(visible)
     self.javaObject:setVisible(visible)
@@ -49,7 +57,12 @@ function ISShowPlayerShopUI:render()
       self.buyButton:setY((self.itemList.mouseoverselected - 1) * self.itemList.itemheight + self.itemList:getYScroll() + (self.itemList.itemheight - self.buyButton.height) / 2)
       self.buyButton:setVisible(true)
       local item = self.itemList.items[self.itemList.mouseoverselected].item
-      local price = self.itemList.itemPrices[GetFullType(item)]
+      local price
+      if instanceof(item, 'InventoryItem') then
+        price = self.itemList.itemPrices[GetFullType(item)]
+      else
+        price = self.itemList.sellPrices[GetFullType(item)]
+      end
       if tonumber(price) then
         if tonumber(price) > 0 then
           self.buyButton:setTitle('BUY')
@@ -58,7 +71,7 @@ function ISShowPlayerShopUI:render()
         end
       elseif price ~= 'Loading...' and isDebugEnabled() then
         if not GetFullType(item.item) then
-          print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
+          print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. tostring(item.item))
         else
           print('PlayerShops: invalid price for item ' .. GetFullType(item.item) .. ' : ' .. (tostring(price) or type(price)))
         end
@@ -77,7 +90,7 @@ local function ShowPlayerOnServerCommand(module, command, arguments)
       local instance = getScriptManager():getItem(item)
       if instance then
         ISShowPlayerShopUI.instance:addShopItem(instance)
-        ISShowPlayerShopUI.instance.itemList.itemPrices[item] = price
+        ISShowPlayerShopUI.instance.itemList.sellPrices[item] = price
       end
     end
   end
@@ -114,6 +127,7 @@ function ISShowPlayerShopUI:create()
     self.itemList.drawBorder = true
     self:addChild(self.itemList)
     self.itemList.itemPrices = {} --TODO refactor this
+    self.itemList.sellPrices = {}
     local items = self.container:getItems()
     for i = 0, items:size() - 1 do
       local item = items:get(i)
@@ -167,17 +181,19 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
 	self:drawRectBorder(0, y, self:getWidth(), item.height, 0.5, self.borderColor.r, self.borderColor.g, self.borderColor.b)
   local icon
   local count
+  local price
   if instanceof(item.item, 'InventoryItem') then
     icon = item.item:getTexture()
     count = self.parent.container:getCountType(item.item:getType())
+    price = self.itemPrices[GetFullType(item.item)]
   else
     icon = item.item:getNormalTexture()
     count = 'Buying'
+    price = self.sellPrices[GetFullType(item.item)]
   end
   self:drawTextureScaledAspect2(icon, 5, y + self.texturePadY, FONT_HGT_MEDIUM, FONT_HGT_MEDIUM, 1, 1, 1, 1)
 	self:drawText(item.text .. " (" .. count .. ")", 10 + FONT_HGT_MEDIUM, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
 
-  local price = self.itemPrices[GetFullType(item.item)]
   if tonumber(price) then
     if tonumber(price) > 0 then
       self:drawText(price, self:getWidth() - 5 - getTextManager():MeasureStringX(self.font, price) - self.vscroll.width, y + self.itemPadY, 0.7, 0.7, 0.7, 1.0, self.font)
@@ -187,7 +203,7 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
     end
   elseif price ~= 'Loading...' then
     if not GetFullType(item.item) and isDebugEnabled() then
-      print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. (tostring(item.item) or '(could not be converted to string)'))
+      print('PlayerShops: invalid item ' .. type(item.item) .. ' ' .. tostring(item.item))
     else
       print('PlayerShops: invalid price for item ' .. GetFullType(item.item) .. ' : ' .. (tostring(price) or type(price)))
     end
@@ -198,9 +214,13 @@ function ISShowPlayerShopUI:doDrawItem(y, item, alt)
 end
 
 function ISShowPlayerShopUI:addShopItem(item)
-  if not self.itemList.itemPrices[GetFullType(item)] and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
+  if not hasPrice(item) and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
     if getActivatedMods():contains('BetterMoneySystem') and BMSATM.Money.Values[GetFullType(item)] then return end
-    self.itemList.itemPrices[GetFullType(item)] = "Loading..."
+    if instanceof(item, 'InventoryItem') then
+      self.itemList.itemPrices[GetFullType(item)] = "Loading..."
+    else
+      self.itemList.sellPrices[GetFullType(item)] = 'Loading...'
+    end
     self.itemList:addItem(item:getDisplayName(), item)
   end
 end
@@ -215,21 +235,20 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
     if self.buyModal then
       self.buyModal:close()
     end
-    if self.sellModal then
-      self.sellModal:close()
-    end
     local item = self.itemList.items[self.itemList.mouseoverselected].item
-    local price = tonumber(self.itemList.itemPrices[GetFullType(item)])
+    local price
+    local modalType
+    if instanceof(item, 'InventoryItem') then
+      price = tonumber(self.itemList.itemPrices[GetFullType(item)])
+      modalType = ISBuyModal
+    else
+      price = tonumber(self.itemList.sellPrices[GetFullType(item)])
+      modalType = ISSellModal
+    end
     if price then
-      if price > 0 then
-        self.buyModal = ISBuyModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
-        self.buyModal:initialise()
-        self.buyModal:addToUIManager()
-      else
-        self.sellModal = ISSellModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
-        self.sellModal:initialise()
-        self.sellModal:addToUIManager()
-      end
+      self.buyModal = modalType:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.container, item, price)
+      self.buyModal:initialise()
+      self.buyModal:addToUIManager()
     else
       if isDebugEnabled() then print('PlayerShops: Attempted buy/sell action on invalid priced item') end
     end
