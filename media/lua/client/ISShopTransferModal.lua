@@ -1,4 +1,4 @@
--- ownership modal and related code is written by albion#0123, based on Browser8's code
+-- transferal modal and related code is written by albion#0123, based on Browser8's code
 
 local ISShopTransferModal = ISPanel:derive("ISShopTransferModal")
 
@@ -33,28 +33,21 @@ end
 
 function ISShopTransferModal.onTextChange(textBox)
   ISShopTransferModal.instance.transferButton:setEnable(false)
-  local potentialOwner = getPlayerFromUsername(textBox:getInternalText())
-  if not potentialOwner then
-    ISShopTransferModal.instance.noticeText = 'No online player with that username found.'
-  elseif potentialOwner:getSteamID() == ISShopTransferModal.instance.shopData.owner then
-    ISShopTransferModal.instance.noticeText = 'Player already owns this shop.'
+  if textBox:getInternalText() == ISShopTransferModal.instance.shopData.owner or ISShopTransferModal.instance.shopData.coowners[textBox:getInternalText()] then
+    ISShopTransferModal.instance.noticeText = 'Player already has access to this shop.'
   else
-    ISShopTransferModal.instance.noticeText = 'Player ' .. potentialOwner:getFullName() .. ' found.'
-    ISShopTransferModal.instance.transferButton:setEnable(true)
+    local name = getPlayerFromUsername(textBox:getInternalText()) and getPlayerFromUsername(textBox:getInternalText()):getFullName() or '(offline)'
+    ISShopTransferModal.instance.noticeText = 'Player character: ' .. name
+    ISShopTransferModal.instance.addButton:setEnable(true)
   end
 end
 
 function ISShopTransferModal:onOptionMouseDown(button, x, y)
     if button.internal == "CANCEL" then
-        self:close()
+      self:close()
     elseif button.internal == "TRANSFER" then
-      local potentialOwner = getPlayerFromUsername(self.usernameEntry:getInternalText()) and getPlayerFromUsername(self.usernameEntry:getInternalText()):getSteamID()
-      if potentialOwner then
-        self.shopData.owner =  potentialOwner
-        self.editUI:close()
-      else
-        self.noticeText = 'Unknown error'
-      end
+      self.shopData.owner =  self.usernameEntry:getInternalText()
+      self.editUI:close()
     end
 end
 

@@ -30,7 +30,7 @@ local function onCreateShop(object, player)
   end
   --newObject:createContainersFromSpriteProperties()
   local shopData = {}
-  shopData.owner = player:getSteamID()
+  shopData.owner = player:getUsername()
   shopData.coowners = {}
   shopData.name = player:getUsername() .. "'s Shop"
   shopData.UUID = getRandomUUID()
@@ -48,7 +48,12 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
     if v:getContainerCount() > 0 then
       local shopData = v:getModData()["shopData"]
       if shopData then
-        if not shopData.UUID then -- convert old stores again
+        if tonumber(shopData.owner) then -- convert stores back to usernames... lol
+          if shopData.owner == playerObj:getSteamID() then
+            shopData.owner = playerObj:getUsername()
+          end
+        end
+        if not shopData.UUID then 
           shopData.UUID = getRandomUUID()
           v:transmitModData()
         end
@@ -56,10 +61,10 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
           shopData.coowners = {}
           v:transmitModData()
         end
-        if shopData.owner == playerObj:getSteamID() then
+        if shopData.owner == playerObj:getUsername() then
           --edit store
           local shopOption = context:addOption("Edit Store", v, onEditShop, shopData, 'owner')
-        elseif shopData.coowners[playerObj:getSteamID()] then
+        elseif shopData.coowners[playerObj:getUsername()] then
           --edit store
           local shopOption = context:addOption("Edit Store", v, onEditShop, shopData, 'coowner')
         elseif not playerObj:isAccessLevel('None') then

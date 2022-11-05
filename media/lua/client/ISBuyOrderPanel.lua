@@ -189,12 +189,6 @@ function ISBuyOrderPanel:onClick(button)
     end
 end
 
-function ISItemsListTable:filterName(widget, scriptItem)
-    local txtToCheck = string.lower(scriptItem:getDisplayName())
-    local filterTxt = string.lower(widget:getInternalText())
-    return checkStringPattern(filterTxt) and string.match(txtToCheck, filterTxt)
-end
-
 function ISBuyOrderPanel:close()
     self:setVisible(false)
     self:removeFromUIManager()

@@ -2,6 +2,7 @@
 local ISEditPlayerShopUI = ISPanel:derive("ISEditPlayerShopUI")
 local ISBuyOrderPanel = require 'ISBuyOrderPanel'
 local ISShopTransferModal = require 'ISShopTransferModal'
+local ISShopAccessPanel = require 'ISShopAccessPanel'
 
 local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 local FONT_HGT_MEDIUM = getTextManager():getFontHeight(UIFont.Medium)
@@ -188,12 +189,12 @@ function ISEditPlayerShopUI:create()
     self.transfer.borderColor = self.buttonBorderColor
     self:addChild(self.transfer)
 
-    self.coowner = ISButton:new(self:getWidth() - (btnWid * 1.5) - padBottom, z, btnWid * 1.5, btnHgt, 'MANAGE ACCESS', self, ISEditPlayerShopUI.onOptionMouseDown)
-    self.coowner.internal = "COOWNER"
-    self.coowner:initialise()
-    self.coowner:instantiate()
-    self.coowner.borderColor = self.buttonBorderColor
-    self:addChild(self.coowner)
+    self.access = ISButton:new(self:getWidth() - (btnWid * 1.5) - padBottom, z, btnWid * 1.5, btnHgt, 'MANAGE ACCESS', self, ISEditPlayerShopUI.onOptionMouseDown)
+    self.access.internal = "ACCESS"
+    self.access:initialise()
+    self.access:instantiate()
+    self.access.borderColor = self.buttonBorderColor
+    self:addChild(self.access)
 end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
@@ -262,17 +263,26 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     sendClientCommand("PlayerShops", "save", {self.shopData.UUID, itemPrices, sellItems})
     self:close()
   elseif button.internal == "BUYORDER" then
-    if not ISBuyOrderPanel.instance then
-      self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)
-      self.buyOrderPanel:initialise()
-      self.buyOrderPanel:addToUIManager()
+    if self.buyOrderPanel then
+      self.buyOrderPanel:close()
     end
+    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)
+    self.buyOrderPanel:initialise()
+    self.buyOrderPanel:addToUIManager()
   elseif button.internal == 'TRANSFER' then
-    if not ISShopTransferModal.instance then
-      self.transferPanel = ISShopTransferModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, ISEditPlayerShopUI.instance)
-      self.transferPanel:initialise()
-      self.transferPanel:addToUIManager()
+    if self.transferPanel then
+      self.transferPanel:close()
     end
+    self.transferPanel = ISShopTransferModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, ISEditPlayerShopUI.instance)
+    self.transferPanel:initialise()
+    self.transferPanel:addToUIManager()
+  elseif button.internal == 'ACCESS' then
+    if self.accessPanel then
+      self.accessPanel:close()
+    end
+    self.accessPanel = ISShopAccessPanel:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 300 * FONT_SCALE, self.shopData)
+    self.accessPanel:initialise()
+    self.accessPanel:addToUIManager()
   end
 end
 
@@ -284,6 +294,9 @@ function ISEditPlayerShopUI:close()
     end
     if self.transferPanel then
       self.transferPanel:close()
+    end
+    if self.accessPanel then
+      self.accessPanel:close()
     end
     ISEditPlayerShopUI.instance = nil
 end
