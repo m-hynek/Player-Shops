@@ -33,6 +33,7 @@ local function onCreateShop(object, player)
   local shopData = {}
   shopData.owner = player:getSteamID()
   shopData.name = player:getUsername() .. "'s Shop"
+  shopData.UUID = getRandomUUID()
   newObject:getModData()["shopData"] = shopData
   square:AddSpecialObject(newObject)
   newObject:transmitCompleteItemToServer()
@@ -52,6 +53,9 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
             shopData.owner = playerObj:getSteamID()
             v:transmitModData()
           end
+        end
+        if not shopData.UUID then
+          shopData.UUID = getRandomUUID()
         end
         if shopData.owner == playerObj:getSteamID() then
           --edit store

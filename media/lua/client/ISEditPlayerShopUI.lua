@@ -142,7 +142,7 @@ function ISEditPlayerShopUI:create()
       self:addShopItem(item)
     end
     Events.OnServerCommand.Add(OnServerCommand)
-    sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.itemList.itemPrices})
+    sendClientCommand("PlayerShops", "load", {self.shopData.owner, self.shopData.UUID, self.itemList.itemPrices})
 
     z = z + height + 10 * FONT_SCALE
     self.save = ISButton:new(padBottom, z, btnWid, btnHgt, getText("UI_btn_save"), self, ISEditPlayerShopUI.onOptionMouseDown)
@@ -220,10 +220,10 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
         end
       end
     end
-    sendClientCommand("PlayerShops", "save", {self.shopData.owner, itemPrices, virtualItems})
+    sendClientCommand("PlayerShops", "save", {self.shopData.owner, self.shopData.UUID, itemPrices, virtualItems})
     self:close()
   elseif button.internal == "BUYORDER" then
-    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, self)
+    self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, ISEditPlayerShopUI.instance)
     self.buyOrderPanel:initialise()
     self.buyOrderPanel:addToUIManager()
   end
