@@ -49,7 +49,8 @@ function ISEditPlayerShopUI:render()
 end
 
 local function OnServerCommand(module, command, arguments)
-	if module == "PlayerShops" and command == "load" then
+	if module ~= "PlayerShops" then return end
+  if command == "load" then
     for i,v in ipairs(arguments[2]) do
       local item = getScriptManager():getItem(v)
       if item then ISEditPlayerShopUI.instance:addShopItem(item) end
