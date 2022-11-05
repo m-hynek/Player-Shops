@@ -219,7 +219,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
         end
       end
     end
-    sendClientCommand("PlayerShops", "save", {itemPrices, virtualItems})
+    sendClientCommand("PlayerShops", "save", {self.shopData.owner, itemPrices, virtualItems})
     self:close()
   elseif button.internal == "BUYORDER" then
     self.buyOrderPanel = ISBuyOrderPanel:new(50, 200, 850, 650, self)

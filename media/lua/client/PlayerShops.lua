@@ -56,6 +56,9 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
         if shopData.owner == playerObj:getSteamID() then
           --edit store
           local shopOption = context:addOption("Edit Store", v, onEditShop, shopData)
+        elseif not playerObj:isAccessLevel('None') then
+          --edit store
+          local shopOption = context:addOption("(ADMIN) Edit Store", v, onEditShop, shopData)
         end
         --view store
         local shopOption = context:addOption("View Store", v, onViewShop, shopData)

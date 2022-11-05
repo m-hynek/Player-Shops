@@ -19,12 +19,14 @@ local function OnClientCommand(module, command, player, args)
 			end
 	    	sendServerCommand(player, module, command, {args[2], playerShopData[args[1]].virtualItems})
 		elseif command == "save" then
-			if not playerShopData[player:getSteamID()] then playerShopData[player:getSteamID()] = {} end
-			local priceData = playerShopData[player:getSteamID()]
-			for k, v in pairs(args[1]) do
+			local owner = args[1]
+			if not playerShopData[owner] then playerShopData[owner] = {} end
+			local priceData = playerShopData[owner]
+			local prices = args[2]
+			for k, v in pairs(prices) do
 				priceData[k] = v
 			end
-			priceData.virtualItems = args[2]
+			priceData.virtualItems = args[3]
 		end
 	end
 end
