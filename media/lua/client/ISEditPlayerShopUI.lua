@@ -197,7 +197,7 @@ function ISEditPlayerShopUI:create()
     self:addChild(self.accessButton)
 
     if self.access == 'coowner' then
-      self.transferButton:setEnabled(false)
+      self.transfer:setEnabled(false)
       self.accessButton:setEnabled(false)
     end
 end
@@ -278,7 +278,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     if self.transferPanel then
       self.transferPanel:close()
     end
-    self.transferPanel = ISShopTransferModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, ISEditPlayerShopUI.instance)
+    self.transferPanel = ISShopTransferModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, self.shop, ISEditPlayerShopUI.instance)
     self.transferPanel:initialise()
     self.transferPanel:addToUIManager()
   elseif button.internal == 'ACCESS' then

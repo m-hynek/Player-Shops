@@ -48,6 +48,7 @@ function ISShopTransferModal:onOptionMouseDown(button, x, y)
     elseif button.internal == "TRANSFER" then
       self.shopData.owner =  self.usernameEntry:getInternalText()
       self.shopData.coowners[self.usernameEntry:getInternalText()] = nil
+      self.shop:transmitModData()
       self.editUI:close()
     end
 end
@@ -68,7 +69,7 @@ function ISShopTransferModal:close()
     ISShopTransferModal.instance = nil
 end
 
-function ISShopTransferModal:new(x, y, width, height, shopData, editUI)
+function ISShopTransferModal:new(x, y, width, height, shopData, shop, editUI)
     local o = {}
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
@@ -79,6 +80,7 @@ function ISShopTransferModal:new(x, y, width, height, shopData, editUI)
     o.buttonBorderColor = {r=0.7, g=0.7, b=0.7, a=0.5}
     o.moveWithMouse = true
     o.shopData = shopData
+    o.shop = shop
     o.editUI = editUI
     ISShopTransferModal.instance = o
     return o
