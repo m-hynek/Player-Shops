@@ -61,6 +61,7 @@ function ISShopAccessPanel:initialise()
             if playerObj then
               v = playerObj:getFullName()
               self.shopData.coowners[k] = v
+              self.shop:transmitModData()
             end
         end
         self.datas:addItem(v, k)
@@ -79,11 +80,13 @@ function ISShopAccessPanel:onClick(button)
         if self.addPanel then
             self.addPanel:close()
         end
-        self.addPanel = ISShopAddCoownerModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, ISShopAccessPanel.instance)
+        self.addPanel = ISShopAddCoownerModal:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 150 * FONT_SCALE, self.shopData, self.shop, ISShopAccessPanel.instance)
         self.addPanel:initialise()
         self.addPanel:addToUIManager()
     elseif button.internal == 'REVOKE' then
-        
+        self.shopData.coowners[self.datas.items[self.datas.selected].item] = nil
+        self.shop:transmitModData()
+        self.datas:removeItemByIndex(self.datas.selected)
     end
 end
 
@@ -96,7 +99,7 @@ function ISShopAccessPanel:close()
     ISShopAccessPanel.instance = nil
 end
 
-function ISShopAccessPanel:new(x, y, width, height, shopData)
+function ISShopAccessPanel:new(x, y, width, height, shopData, shop)
     local o = {}
     x = getCore():getScreenWidth() / 2 - (width / 2)
     y = getCore():getScreenHeight() / 2 - (height / 2)
@@ -109,6 +112,7 @@ function ISShopAccessPanel:new(x, y, width, height, shopData)
     o.height = height
     o.moveWithMouse = true
     o.shopData = shopData
+    o.shop = shop
     ISShopAccessPanel.instance = o
     return o
 end

@@ -17,14 +17,14 @@ function ISShopTransferModal:createChildren()
 
   local btnHgt = FONT_HGT_SMALL + 5 * 2 * FONT_SCALE
   local buttonY = self.height - 10 * FONT_SCALE - btnHgt
-  self.transferButton = ISButton:new(self.width/2 - 50 - 10, buttonY, 50, btnHgt, "TRANSFER", self, ISShopTransferModal.onOptionMouseDown)
+  self.transferButton = ISButton:new(self.width/2 - 75 - 10, buttonY, 75, btnHgt, "TRANSFER", self, ISShopTransferModal.onOptionMouseDown)
   self.transferButton.internal = "TRANSFER"
   self.transferButton:initialise()
   self.transferButton:instantiate()
   self.transferButton:setEnable(false)
   self:addChild(self.transferButton)
 
-  self.cancelButton = ISButton:new(self.width/2 + 10, buttonY, 50, btnHgt, getText("UI_btn_close"), self, ISShopTransferModal.onOptionMouseDown)
+  self.cancelButton = ISButton:new(self.width/2 + 35, buttonY, 50, btnHgt, getText("UI_btn_close"), self, ISShopTransferModal.onOptionMouseDown)
   self.cancelButton.internal = "CANCEL"
   self.cancelButton:initialise()
   self.cancelButton:instantiate()
@@ -33,12 +33,12 @@ end
 
 function ISShopTransferModal.onTextChange(textBox)
   ISShopTransferModal.instance.transferButton:setEnable(false)
-  if textBox:getInternalText() == ISShopTransferModal.instance.shopData.owner or ISShopTransferModal.instance.shopData.coowners[textBox:getInternalText()] then
-    ISShopTransferModal.instance.noticeText = 'Player already has access to this shop.'
+  if textBox:getInternalText() == ISShopTransferModal.instance.shopData.owner then
+    ISShopTransferModal.instance.noticeText = 'Player already owns this shop.'
   else
     local name = getPlayerFromUsername(textBox:getInternalText()) and getPlayerFromUsername(textBox:getInternalText()):getFullName() or '(offline)'
     ISShopTransferModal.instance.noticeText = 'Player character: ' .. name
-    ISShopTransferModal.instance.addButton:setEnable(true)
+    ISShopTransferModal.instance.transferButton:setEnable(true)
   end
 end
 
@@ -47,6 +47,7 @@ function ISShopTransferModal:onOptionMouseDown(button, x, y)
       self:close()
     elseif button.internal == "TRANSFER" then
       self.shopData.owner =  self.usernameEntry:getInternalText()
+      self.shopData.coowners[self.usernameEntry:getInternalText()] = nil
       self.editUI:close()
     end
 end

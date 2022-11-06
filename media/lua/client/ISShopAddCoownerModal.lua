@@ -52,6 +52,7 @@ function ISShopAddCoownerModal:onOptionMouseDown(button, x, y)
       else
         self.shopData.coowners[self.usernameEntry:getInternalText()] = self.usernameEntry:getInternalText() .. ' (offline)'
       end
+      self.shop:transmitModData()
       self.accessPanel.datas:addItem(self.shopData.coowners[self.usernameEntry:getInternalText()], self.usernameEntry:getInternalText())
       self:close()
     end
@@ -73,7 +74,7 @@ function ISShopAddCoownerModal:close()
     ISShopAddCoownerModal.instance = nil
 end
 
-function ISShopAddCoownerModal:new(x, y, width, height, shopData, accessPanel)
+function ISShopAddCoownerModal:new(x, y, width, height, shopData, shop, accessPanel)
     local o = {}
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
@@ -85,6 +86,7 @@ function ISShopAddCoownerModal:new(x, y, width, height, shopData, accessPanel)
     o.moveWithMouse = true
     o.shopData = shopData
     o.accessPanel = accessPanel
+    o.shop = shop
     ISShopAddCoownerModal.instance = o
     return o
 end

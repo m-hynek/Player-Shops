@@ -3,7 +3,7 @@ local ISShowPlayerShopUI = require "ISShowPlayerShopUI"
 local UI_SCALE = getTextManager():getFontHeight(UIFont.Small)/14
 
 local function onEditShop(shop, shopData, access)
-  local storeMenu = ISEditPlayerShopUI:new((getCore():getScreenWidth() - 400 * UI_SCALE)/2, (getCore():getScreenHeight() - 600 * UI_SCALE)/2, 400 * UI_SCALE, 600 * UI_SCALE, shop, shopData)
+  local storeMenu = ISEditPlayerShopUI:new((getCore():getScreenWidth() - 400 * UI_SCALE)/2, (getCore():getScreenHeight() - 600 * UI_SCALE)/2, 400 * UI_SCALE, 600 * UI_SCALE, shop, shopData, access)
   storeMenu:initialise()
   storeMenu:addToUIManager()
 end

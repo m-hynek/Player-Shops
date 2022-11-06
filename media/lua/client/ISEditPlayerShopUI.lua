@@ -189,12 +189,17 @@ function ISEditPlayerShopUI:create()
     self.transfer.borderColor = self.buttonBorderColor
     self:addChild(self.transfer)
 
-    self.access = ISButton:new(self:getWidth() - (btnWid * 1.5) - padBottom, z, btnWid * 1.5, btnHgt, 'MANAGE ACCESS', self, ISEditPlayerShopUI.onOptionMouseDown)
-    self.access.internal = "ACCESS"
-    self.access:initialise()
-    self.access:instantiate()
-    self.access.borderColor = self.buttonBorderColor
-    self:addChild(self.access)
+    self.accessButton = ISButton:new(self:getWidth() - (btnWid * 1.5) - padBottom, z, btnWid * 1.5, btnHgt, 'MANAGE ACCESS', self, ISEditPlayerShopUI.onOptionMouseDown)
+    self.accessButton.internal = "ACCESS"
+    self.accessButton:initialise()
+    self.accessButton:instantiate()
+    self.accessButton.borderColor = self.buttonBorderColor
+    self:addChild(self.accessButton)
+
+    if self.access == 'coowner' then
+      self.transferButton:setEnabled(false)
+      self.accessButton:setEnabled(false)
+    end
 end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
@@ -280,7 +285,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
     if self.accessPanel then
       self.accessPanel:close()
     end
-    self.accessPanel = ISShopAccessPanel:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 300 * FONT_SCALE, self.shopData)
+    self.accessPanel = ISShopAccessPanel:new(self:getAbsoluteX() + (self.width - 300 * FONT_SCALE)/2, self:getAbsoluteY() + (self.height - 150 * FONT_SCALE)/2, 300 * FONT_SCALE, 300 * FONT_SCALE, self.shopData, self.shop)
     self.accessPanel:initialise()
     self.accessPanel:addToUIManager()
   end
@@ -301,7 +306,7 @@ function ISEditPlayerShopUI:close()
     ISEditPlayerShopUI.instance = nil
 end
 
-function ISEditPlayerShopUI:new(x, y, width, height, shop, shopData)
+function ISEditPlayerShopUI:new(x, y, width, height, shop, shopData, access)
     local o = {}
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
@@ -314,6 +319,7 @@ function ISEditPlayerShopUI:new(x, y, width, height, shop, shopData)
     o.shop = shop
     o.container = shop:getContainer()
     o.shopData = shopData
+    o.access = access
     ISEditPlayerShopUI.instance = o
     return o
 end
