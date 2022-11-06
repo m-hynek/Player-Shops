@@ -12,6 +12,7 @@ local function OnClientCommand(module, command, player, args)
 			local UUID = args[1]
 			if not playerShopData[UUID] then playerShopData[UUID] = {} end
 			if not playerShopData[UUID].buyItems then playerShopData[UUID].buyItems = {} end
+			if not playerShopData[UUID].sellItems then playerShopData[UUID].sellItems = {} end
 			local priceData = playerShopData[UUID]
 			local items = args[2]
 			for item, _ in pairs(items) do

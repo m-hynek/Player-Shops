@@ -77,6 +77,12 @@ local function OnServerCommand(module, command, arguments)
   Events.OnServerCommand.Remove(OnServerCommand)
 end
 
+local function OnPlayerMove(player)
+  if player:isLocalPlayer() and player:DistToProper(ISEditPlayerShopUI.instance.shop) > 2 then
+    ISEditPlayerShopUI.instance:close()
+  end
+end
+
 function ISEditPlayerShopUI:create()
     local btnWid = 125 * FONT_SCALE
     local btnHgt = FONT_HGT_SMALL + 5 * 2 * FONT_SCALE
@@ -200,6 +206,8 @@ function ISEditPlayerShopUI:create()
       self.transfer:setEnabled(false)
       self.accessButton:setEnabled(false)
     end
+
+    Events.OnPlayerMove.Add(OnPlayerMove)
 end
 
 function ISEditPlayerShopUI:doDrawItem(y, item, alt)
@@ -292,6 +300,7 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
 end
 
 function ISEditPlayerShopUI:close()
+    Events.OnPlayerMove.Remove(OnPlayerMove)
     self:setVisible(false)
     self:removeFromUIManager()
     if self.buyOrderPanel then

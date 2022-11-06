@@ -102,6 +102,12 @@ local function ShowPlayerOnServerCommand(module, command, arguments)
   Events.OnServerCommand.Remove(ShowPlayerOnServerCommand)
 end
 
+local function OnPlayerMove(player)
+  if player:isLocalPlayer() and player:DistToProper(ISShowPlayerShopUI.instance.shop) > 2 then
+    ISShowPlayerShopUI.instance:close()
+  end
+end
+
 function ISShowPlayerShopUI:create()
     local btnWid = 125 * FONT_SCALE
     local btnHgt = FONT_HGT_SMALL + 5 * 2 * FONT_SCALE
@@ -158,6 +164,8 @@ function ISShowPlayerShopUI:create()
     self.cancel:instantiate()
     self.cancel.borderColor = self.buttonBorderColor
     self:addChild(self.cancel)
+
+    Events.OnPlayerMove.Add(OnPlayerMove)
 end
 
 function ISShowPlayerShopUI.onMouseWheel(self, del)
@@ -260,6 +268,7 @@ function ISShowPlayerShopUI:onOptionMouseDown(button, x, y)
 end
 
 function ISShowPlayerShopUI:close()
+    Events.OnPlayerMove.Remove(OnPlayerMove)
     if self.buyModal then
       self.buyModal:close()
     end

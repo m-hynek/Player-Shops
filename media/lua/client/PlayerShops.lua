@@ -45,7 +45,7 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
   local playerObj = getSpecificPlayer(player)
   local hasLedger = playerObj:getInventory():containsType("ShopLedger")
   for i, v in ipairs(worldObjects) do
-    if v:getContainerCount() > 0 then
+    if v:getContainerCount() > 0 and not (instanceof(v, 'IsoObject') and playerObj:DistToProper(v) > 2) then
       local shopData = v:getModData()["shopData"]
       if shopData then
         if tonumber(shopData.owner) then -- convert stores back to usernames... lol
