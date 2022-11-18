@@ -48,19 +48,6 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
     if v:getContainerCount() > 0 and not (instanceof(v, 'IsoObject') and playerObj:DistToProper(v) > 2) then
       local shopData = v:getModData()["shopData"]
       if shopData then
-        if tonumber(shopData.owner) then -- convert stores back to usernames... lol
-          if shopData.owner == playerObj:getSteamID() then
-            shopData.owner = playerObj:getUsername()
-          end
-        end
-        if not shopData.UUID then 
-          shopData.UUID = getRandomUUID()
-          v:transmitModData()
-        end
-        if not shopData.coowners then
-          shopData.coowners = {}
-          v:transmitModData()
-        end
         if shopData.owner == playerObj:getUsername() then
           --edit store
           local shopOption = context:addOption("Edit Store", v, onEditShop, shopData, 'owner')
