@@ -72,6 +72,42 @@ end
 
 Events.OnPreFillWorldObjectContextMenu.Add(OnPreFillWorldObjectContextMenu)
 
+-- shouldn't activate this until we decide to reimplement private vehicles, otherwise anyone can make a store in anyone's vehicle
+-- and you can't stop people from removing items from the container
+
+--[[local old_showRadialMenu = ISVehicleMenu.showRadialMenuOutside
+
+function ISVehicleMenu.showRadialMenuOutside(playerObj)
+  if playerObj:getVehicle() then return end
+  old_showRadialMenu(playerObj)
+
+  local vehicle = ISVehicleMenu.getVehicleToInteractWith(playerObj)
+  local menu = getPlayerRadialMenu(playerIndex)
+  local hasLedger = playerObj:getInventory():containsType("ShopLedger")
+
+  local boot = vehicle:getPartById('TruckBed')
+  if boot then
+    local shopData = boot:getModData()["shopData"]
+    if shopData then
+      if shopData.owner == playerObj:getUsername() then
+        --edit store
+        menu:addSlice('Edit Store', getTexture("media/ui/ZoomIn.png"), onEditShop, boot, shopData, 'owner')
+      elseif shopData.coowners[playerObj:getUsername()] then
+        --edit store
+        menu:addSlice('Edit Store', getTexture("media/ui/ZoomIn.png"), onEditShop, boot, shopData, 'coowner')
+      elseif not playerObj:isAccessLevel('None') then
+        --edit store
+        menu:addSlice('(ADMIN) Edit Store', getTexture("media/ui/ZoomIn.png"), onEditShop, boot, shopData, 'admin')
+      end
+      --view store
+      menu:addSlice('View Store', getTexture("media/ui/ZoomIn.png"), onViewShop, boot, shopData)
+    elseif hasLedger then
+      --convert to shop
+      menu:addSlice('Convert To Store', getTexture("media/ui/ZoomIn.png"), onCreateShop, boot, playerObj)
+    end
+  end
+end]]
+
 local function OnGameStart()
 	if not SandboxVars.PlayerShops.AllowLedgerCrafting then
     getScriptManager():getRecipe("Create Shop Ledger"):setNeedToBeLearn(true)
