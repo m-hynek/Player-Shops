@@ -80,7 +80,7 @@ function ISSellModal:doPayment()
     local sum = 0
     for k,v in pairs(ProjectRP.Client.Money.Values) do
       if sum >= price then break end
-      local items = self.container:getAllTypeRecurse(k)
+      local items = self.container:getAllType(k)
       for i = 0, items:size() - 1 do
         if sum >= price then break end
         sum = sum + v.v

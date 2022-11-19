@@ -12,7 +12,7 @@ local function getMoneyCountIncludingWallets(container)
     for i = 0, itemsList:size()-1 do
         local item = itemsList:get(i)
         if item:getCategory() == "Container" then
-            sum = sum + getMoneyCountIncludingWallets(item:getItemContainer())
+            --sum = sum + getMoneyCountIncludingWallets(item:getItemContainer())
         end
         local wallets = {['Wallet']=true, ['Wallet2']=true, ['Wallet3']=true, ['Wallet4']=true}
         if wallets[item:getType()] then
@@ -99,9 +99,9 @@ function ISBuyModal:doPayment()
     -- this algorithm is a fucking monster
     local sum = 0
 
-    local wallets = {['Wallet']=true, ['Wallet2']=true, ['Wallet3']=true, ['Wallet4']=true}
-    for walletType,_ in pairs(wallets) do
-      local wallets = inventory:getAllTypeRecurse(walletType)
+    local walletTypes = {['Wallet']=true, ['Wallet2']=true, ['Wallet3']=true, ['Wallet4']=true}
+    for walletType,_ in pairs(walletTypes) do
+      local wallets = inventory:getAllType(walletType)
       for i = 0, wallets:size() -1 do
         local wallet = wallets:get(i)
         if wallet:getModData() then
@@ -119,7 +119,7 @@ function ISBuyModal:doPayment()
     if sum < price then -- not enough money in wallets, use loose money
       for k,v in pairs(ProjectRP.Client.Money.Values) do
         if sum >= price then break end
-        local items = inventory:getAllTypeRecurse(k)
+        local items = inventory:getAllType(k)
         for i = 0, items:size() - 1 do
           if sum >= price then break end
           sum = sum + v.v
