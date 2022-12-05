@@ -79,7 +79,7 @@ function ISShowPlayerShopUI:render()
     end
 end
 
-local function ShowPlayerOnServerCommand(module, command, arguments)
+local function onServerCommand(module, command, arguments)
 	if module ~= "PlayerShops" then return end
   if command == "load" then
     local rows = ISShowPlayerShopUI.instance.itemList.items
@@ -99,7 +99,7 @@ local function ShowPlayerOnServerCommand(module, command, arguments)
       end
     end
   end
-  Events.OnServerCommand.Remove(ShowPlayerOnServerCommand)
+  Events.OnServerCommand.Remove(onServerCommand)
 end
 
 local function OnPlayerMove(player)
@@ -146,7 +146,7 @@ function ISShowPlayerShopUI:create()
     end
     self.itemList:setYScroll(0)
     self.itemList.mouseoverselected = -1
-    Events.OnServerCommand.Add(ShowPlayerOnServerCommand)
+    Events.OnServerCommand.Add(onServerCommand)
     sendClientCommand("PlayerShops", "load", {self.shopData.UUID, self.itemList.itemPrices})
 
     self.buyButton = ISButton:new(self.itemList:getWidth() - 75 - self.itemList.vscroll.width, 0, 70, FONT_HGT_SMALL + 8 * FONT_SCALE, "BUY", self, ISShowPlayerShopUI.onOptionMouseDown)

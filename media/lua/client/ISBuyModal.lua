@@ -16,7 +16,9 @@ local function getMoneyCountIncludingWallets(container)
         end
         local wallets = {['Wallet']=true, ['Wallet2']=true, ['Wallet3']=true, ['Wallet4']=true}
         if wallets[item:getType()] then
+          if item:getModData().moneyCount then
             sum = sum + item:getModData().moneyCount
+          end
         elseif ProjectRP.Client.Money.Values[item:getType()] ~= nil then
             sum = sum + ProjectRP.Client.Money.Values[item:getType()].v
         end
