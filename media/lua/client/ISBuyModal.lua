@@ -11,17 +11,14 @@ local function getMoneyCountIncludingWallets(container)
     local itemsList = container:getItems()
     for i = 0, itemsList:size()-1 do
         local item = itemsList:get(i)
-        if item:getCategory() == "Container" then
-            --sum = sum + getMoneyCountIncludingWallets(item:getItemContainer())
-        end
-        local wallets = {['Wallet']=true, ['Wallet2']=true, ['Wallet3']=true, ['Wallet4']=true}
-        if wallets[item:getType()] then
-          if item:getModData().moneyCount then
-            sum = sum + item:getModData().moneyCount
-          end
-        elseif ProjectRP.Client.Money.Values[item:getType()] ~= nil then
-            sum = sum + ProjectRP.Client.Money.Values[item:getType()].v
-        end
+        --[[if item:getCategory() == "Container" then
+            sum = sum + getMoneyCountIncludingWallets(item:getItemContainer())
+        end]]
+        if ProjectRP.Client.Money.WalletTypes[item:getType()] then
+            sum = item:getModData().moneyCount and sum + item:getModData().moneyCount or sum
+        else
+            sum = ProjectRP.Client.Money.Values[item:getType()].v and sum + ProjectRP.Client.Money.Values[item:getType()].v or sum
+		end
     end
     return sum
 end
