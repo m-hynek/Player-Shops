@@ -65,7 +65,7 @@ function ISSellModal:onOptionMouseDown(button, x, y)
 end
 
 function ISSellModal:hasCurrency()
-  if getActivatedMods():contains('ZZZProjectRP') then
+  if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
     return ProjectRP.Client.Money.getMoneyCountInContainer(self.container) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
   else
     return self.container:getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
@@ -76,7 +76,7 @@ function ISSellModal:doPayment()
   local inventory = getPlayer():getInventory()
   local price = tonumber(self.price) * tonumber(self.quantityEntry:getText())
 
-  if getActivatedMods():contains('ZZZProjectRP') then
+  if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
     local sum = 0
     for k,v in pairs(ProjectRP.Client.Money.Values) do
       if sum >= price then break end
