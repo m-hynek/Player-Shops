@@ -34,7 +34,7 @@ local function createMoney(container, num)
           end
       end
       if max == 0 then return end
-      if getActivatedMods():contains('ZZZProjectRP') then
+      if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
         maxType = 'PRP.' .. maxType
       end
       local item = container:AddItem(maxType)
@@ -84,7 +84,7 @@ function ISBuyModal:onOptionMouseDown(button, x, y)
 end
 
 function ISBuyModal:hasCurrency()
-  if getActivatedMods():contains('ZZZProjectRP') then
+  if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
     return getMoneyCountIncludingWallets(getPlayer():getInventory(), ProjectRP.Client.Money) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
   else
     return getPlayer():getInventory():getCountType(SandboxVars.PlayerShops.CurrencyItem) >= tonumber(self.price) * tonumber(self.quantityEntry:getText())
@@ -94,7 +94,7 @@ end
 function ISBuyModal:doPayment()
   local inventory = getPlayer():getInventory()
   local price = tonumber(self.price) * tonumber(self.quantityEntry:getText())
-  if getActivatedMods():contains('ZZZProjectRP') then
+  if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
     -- this algorithm is a fucking monster
     local sum = 0
 

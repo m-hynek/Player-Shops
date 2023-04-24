@@ -231,7 +231,7 @@ end
 
 function ISEditPlayerShopUI:addShopItem(item)
   if not hasPrice(item) and GetFullType(item) ~= SandboxVars.PlayerShops.CurrencyItem then
-    if getActivatedMods():contains('ZZZProjectRP') and ProjectRP.Client.Money.Values[GetType(item)] then return end
+    if getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') and ProjectRP.Client.Money.Values[GetType(item)] then return end
     if instanceof(item, 'InventoryItem') then
       self.itemList.itemPrices[item:getFullType()] = "Loading..."
     else
