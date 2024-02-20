@@ -18,7 +18,10 @@ local function OnClientCommand(module, command, player, args)
 			for item, _ in pairs(items) do
 				items[item] = priceData.buyItems[item] or "0"
 			end
-	    	sendServerCommand(player, module, command, {items, priceData.sellItems})
+	    	sendServerCommand(player, "PlayerShops", "load", {items, priceData.sellItems})
+			if not isServer() then
+				triggerEvent("OnServerCommand", "PlayerShops", "load", {items, priceData.sellItems})
+			end
 		elseif command == "save" then
 			local UUID = args[1]
 			if not playerShopData[UUID] then playerShopData[UUID] = {} end

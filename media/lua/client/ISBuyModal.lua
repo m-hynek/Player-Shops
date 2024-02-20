@@ -17,7 +17,7 @@ local function getMoneyCountIncludingWallets(container)
         if ProjectRP.Client.Money.WalletTypes[item:getType()] then
             sum = item:getModData().moneyCount and sum + item:getModData().moneyCount or sum
         else
-            sum = ProjectRP.Client.Money.Values[item:getType()].v and sum + ProjectRP.Client.Money.Values[item:getType()].v or sum
+            sum = ProjectRP.Client.Money.Values[item:getType()] and sum + ProjectRP.Client.Money.Values[item:getType()].v or sum
 		end
     end
     return sum

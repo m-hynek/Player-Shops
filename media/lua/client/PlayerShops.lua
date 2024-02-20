@@ -114,4 +114,34 @@ local function OnGameStart()
   end
 end
 
+---@param obj IsoObject
+---@param player IsoPlayer
+local function hasAccessToShop(obj, player)
+    shopData = obj:getModData().shopData
+    if not shopData then return true end
+    local username = player:getUsername()
+    return shopData.owner == username or shopData.coowners[username]
+end
+
+local old_isValid = ISInventoryTransferAction.isValid
+function ISInventoryTransferAction:isValid()
+    local source, dest = self.srcContainer:getParent(), self.destContainer:getParent()
+    if (source and not hasAccessToShop(source, self.character)) or (dest and not hasAccessToShop(dest, self.character)) then
+        return false
+    end
+
+    return old_isValid(self)
+end
+
+__PlayerShopsOnTest = {}
+
+---@param item InventoryItem
+__PlayerShopsOnTest.HasAccessToShop = function(item)
+    local parent = item:getContainer():getParent()
+    if parent and not hasAccessToShop(parent, getPlayer()) then
+        return false
+    end
+    return true
+end
+
 Events.OnGameStart.Add(OnGameStart)
