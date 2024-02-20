@@ -119,6 +119,7 @@ end
 local function hasAccessToShop(obj, player)
     shopData = obj:getModData().shopData
     if not shopData then return true end
+    if isAdmin() then return true end
     local username = player:getUsername()
     return shopData.owner == username or shopData.coowners[username]
 end
