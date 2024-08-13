@@ -267,7 +267,10 @@ function ISEditPlayerShopUI:onOptionMouseDown(button, x, y)
           itemPrices[GetFullType(v.item)] = '0'
         end
       else
-        if tonumber(price) < 0 then
+        if tonumber(price) > 0 then
+          print('added to sellItems')
+          sellItems[GetFullType(v.item)] = tostring(tonumber(price) * -1)
+        elseif tonumber(price) < 0 then
           print('added to sellItems')
           sellItems[GetFullType(v.item)] = price
         end
