@@ -109,11 +109,72 @@ function ISVehicleMenu.showRadialMenuOutside(playerObj)
 end]]
 
 local function OnGameStart()
-	if not SandboxVars.PlayerShops.AllowLedgerCrafting then
+  if not SandboxVars.PlayerShops.AllowLedgerCrafting then
     getScriptManager():getRecipe("Create Shop Ledger"):setNeedToBeLearn(true)
+  end
+
+  if not getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
+    __PlayerShopsRestrictions.restrictDestroy()
+    __PlayerShopsRestrictions.restrictDismantle()
+    __PlayerShopsRestrictions.restrictPickup()
   end
 end
 
+__PlayerShopsRestrictions = {}
+
+__PlayerShopsRestrictions.restrictDestroy = function()
+    local _canDestroy = ISDestroyCursor.canDestroy;
+    function ISDestroyCursor.canDestroy(self, _object)
+        local _return = _canDestroy(self, _object)
+        if _return then
+            if not __PlayerShopsRestrictions.hasAccessToShop(_object, getPlayer()) then
+                return false
+            end
+        end
+
+        return _return
+    end
+end
+
+__PlayerShopsRestrictions.restrictDismantle = function()
+    local _canScrapObjectInternal = ISMoveableSpriteProps.canScrapObjectInternal;
+    function ISMoveableSpriteProps.canScrapObjectInternal(self, _result, _object)
+        local _return = _canScrapObjectInternal(self, _result, _object)
+        if _return then
+            if not __PlayerShopsRestrictions.hasAccessToShop(_object, getPlayer()) then
+                return false
+            end
+        end
+
+        return _return
+    end
+end
+
+__PlayerShopsRestrictions.restrictPickup = function()
+    local _canPickUpMoveable = ISMoveableSpriteProps.canPickUpMoveable;
+    function ISMoveableSpriteProps.canPickUpMoveable(self, _character, _square, _object)
+        local _return = _canPickUpMoveable(self, _character, _square, _object)
+        if _return then
+            if not __PlayerShopsRestrictions.hasAccessToShop(_object, _character) then
+                return false
+            end
+        end
+
+        return _return
+    end
+end
+
+---@param obj IsoObject
+---@param player IsoPlayer
+__PlayerShopsRestrictions.hasAccessToShop = function(obj, player)
+    shopData = obj:getModData().shopData
+    if not shopData then return true end
+    if isAdmin() then return true end
+    local username = player:getUsername()
+    return shopData.owner == username or shopData.coowners[username]
+end
+
+---@deprecated
 ---@param obj IsoObject
 ---@param player IsoPlayer
 local function hasAccessToShop(obj, player)
