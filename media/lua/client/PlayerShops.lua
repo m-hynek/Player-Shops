@@ -2,6 +2,8 @@ local ISEditPlayerShopUI = require "ISEditPlayerShopUI"
 local ISShowPlayerShopUI = require "ISShowPlayerShopUI"
 local UI_SCALE = getTextManager():getFontHeight(UIFont.Small)/14
 
+local PlayerShops = {}
+
 local function onEditShop(shop, shopData, access)
   local storeMenu = ISEditPlayerShopUI:new((getCore():getScreenWidth() - 400 * UI_SCALE)/2, (getCore():getScreenHeight() - 600 * UI_SCALE)/2, 400 * UI_SCALE, 600 * UI_SCALE, shop, shopData, access)
   storeMenu:initialise()
@@ -60,11 +62,11 @@ local function OnPreFillWorldObjectContextMenu(player, context, worldObjects, te
         end
         --view store
         local shopOption = context:addOption("View Store", v, onViewShop, shopData)
-          if not getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') and __PlayerShopsRestrictions.hasAccessToShop(v, playerObj) then
+          if not getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') and PlayerShops.hasAccessToShop(v, playerObj) then
             if v:isLockedByPadlock() then
-              local unlockOption = context:addOption("Unlock", v, __PlayerShopsRestrictions.lockUnlockPlayerShop, v, false);
+              local unlockOption = context:addOption("Unlock", v, PlayerShops.setShopLocked, false);
             else
-              local lockOption = context:addOption("Lock", v, __PlayerShopsRestrictions.lockUnlockPlayerShop, v, true);
+              local lockOption = context:addOption("Lock", v, PlayerShops.setShopLocked, true);
             end
           end
         break
@@ -115,109 +117,90 @@ function ISVehicleMenu.showRadialMenuOutside(playerObj)
   end
 end]]
 
-local function OnGameStart()
-  if not SandboxVars.PlayerShops.AllowLedgerCrafting then
-    getScriptManager():getRecipe("Create Shop Ledger"):setNeedToBeLearn(true)
-  end
-
-  if not getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
-    __PlayerShopsRestrictions.restrictDestroy()
-    __PlayerShopsRestrictions.restrictDismantle()
-    __PlayerShopsRestrictions.restrictPickup()
-  end
-end
-
-__PlayerShopsRestrictions = {}
-
-__PlayerShopsRestrictions.restrictDestroy = function()
-    local _canDestroy = ISDestroyCursor.canDestroy;
-    function ISDestroyCursor.canDestroy(self, _object)
-        local _return = _canDestroy(self, _object)
-        if _return then
-            if not __PlayerShopsRestrictions.hasAccessToShop(_object, getPlayer()) then
-                return false
-            end
-        end
-
-        return _return
-    end
-end
-
-__PlayerShopsRestrictions.restrictDismantle = function()
-    local _canScrapObjectInternal = ISMoveableSpriteProps.canScrapObjectInternal;
-    function ISMoveableSpriteProps.canScrapObjectInternal(self, _result, _object)
-        local _return = _canScrapObjectInternal(self, _result, _object)
-        if _return then
-            if not __PlayerShopsRestrictions.hasAccessToShop(_object, getPlayer()) then
-                return false
-            end
-        end
-
-        return _return
-    end
-end
-
-__PlayerShopsRestrictions.restrictPickup = function()
-    local _canPickUpMoveable = ISMoveableSpriteProps.canPickUpMoveable;
-    function ISMoveableSpriteProps.canPickUpMoveable(self, _character, _square, _object)
-        local _return = _canPickUpMoveable(self, _character, _square, _object)
-        if _return then
-            if not __PlayerShopsRestrictions.hasAccessToShop(_object, _character) then
-                return false
-            end
-        end
-
-        return _return
-    end
-end
-
----@param obj IsoObject
----@param player IsoPlayer
-__PlayerShopsRestrictions.hasAccessToShop = function(obj, player)
-    shopData = obj:getModData().shopData
-    if not shopData then return true end
-    if isAdmin() then return true end
-    local username = player:getUsername()
-    return shopData.owner == username or shopData.coowners[username]
-end
-
----@param worldobjects
----@param object IsoObject
----@param locked bool
-__PlayerShopsRestrictions.lockUnlockPlayerShop = function(worldobjects, object, locked)
-    object:setLockedByPadlock(locked);
-end
-
----@deprecated
----@param obj IsoObject
----@param player IsoPlayer
-local function hasAccessToShop(obj, player)
-    shopData = obj:getModData().shopData
-    if not shopData then return true end
-    if isAdmin() then return true end
-    local username = player:getUsername()
-    return shopData.owner == username or shopData.coowners[username]
-end
-
 local old_isValid = ISInventoryTransferAction.isValid
+---@diagnostic disable-next-line: duplicate-set-field
 function ISInventoryTransferAction:isValid()
     local source, dest = self.srcContainer:getParent(), self.destContainer:getParent()
-    if (source and not hasAccessToShop(source, self.character)) or (dest and not hasAccessToShop(dest, self.character)) then
+    if (source and not PlayerShops.hasAccessToShop(source, self.character)) or (dest and not PlayerShops.hasAccessToShop(dest, self.character)) then
         return false
     end
 
     return old_isValid(self)
 end
 
-_PlayerShopsOnTest = {}
+---@param obj IsoObject
+---@param player IsoPlayer
+PlayerShops.hasAccessToShop = function(obj, player)
+  local shopData = obj:getModData().shopData
+  if not shopData then return true end
+  if isAdmin() then return true end
+  local username = player:getUsername()
+  return shopData.owner == username or shopData.coowners[username]
+end
 
----@param item InventoryItem
-_PlayerShopsOnTest.HasAccessToShop = function(item)
-    local parent = item:getContainer():getParent()
-    if parent and not hasAccessToShop(parent, getPlayer()) then
-        return false
-    end
-    return true
+---@param object IsoThumpable
+---@param locked boolean
+PlayerShops.setShopLocked = function(object, locked)
+  object:setLockedByPadlock(locked);
+end
+
+local restrictDestroy = function()
+  local _canDestroy = ISDestroyCursor.canDestroy;
+  ---@diagnostic disable-next-line: duplicate-set-field
+  function ISDestroyCursor.canDestroy(self, _object)
+      local _return = _canDestroy(self, _object)
+      if _return then
+          if not PlayerShops.hasAccessToShop(_object, getPlayer()) then
+              return false
+          end
+      end
+
+      return _return
+  end
+end
+
+local restrictDismantle = function()
+  local _canScrapObjectInternal = ISMoveableSpriteProps.canScrapObjectInternal;
+  ---@diagnostic disable-next-line: duplicate-set-field
+  function ISMoveableSpriteProps.canScrapObjectInternal(self, _result, _object)
+      local _return = _canScrapObjectInternal(self, _result, _object)
+      if _return then
+          if not PlayerShops.hasAccessToShop(_object, getPlayer()) then
+              return false
+          end
+      end
+
+      return _return
+  end
+end
+
+local restrictPickup = function()
+  local _canPickUpMoveable = ISMoveableSpriteProps.canPickUpMoveable;
+  ---@diagnostic disable-next-line: duplicate-set-field
+  function ISMoveableSpriteProps.canPickUpMoveable(self, _character, _square, _object)
+      local _return = _canPickUpMoveable(self, _character, _square, _object)
+      if _return then
+          if not PlayerShops.hasAccessToShop(_object, _character) then
+              return false
+          end
+      end
+
+      return _return
+  end
+end
+
+local function OnGameStart()
+  if not SandboxVars.PlayerShops.AllowLedgerCrafting then
+    getScriptManager():getRecipe("Create Shop Ledger"):setNeedToBeLearn(true)
+  end
+
+  if not getActivatedMods():contains('ZZZZAlbionPlayerShops_ModCompat') then
+    restrictDestroy()
+    restrictDismantle()
+    restrictPickup()
+  end
 end
 
 Events.OnGameStart.Add(OnGameStart)
+
+return PlayerShops

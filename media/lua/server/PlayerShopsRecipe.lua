@@ -1,3 +1,5 @@
+local PlayerShops = require "PlayerShops"
+
 ---@param func function
 local generateOnTest = function(func)
     ---@param item InventoryItem
@@ -18,6 +20,17 @@ local function getFunctionByName(funcName)
     end
     if not type(func) == "function" then return end
     return func
+end
+
+_PlayerShopsOnTest = {}
+
+---@param item InventoryItem
+_PlayerShopsOnTest.HasAccessToShop = function(item)
+    local parent = item:getContainer():getParent()
+    if parent and not PlayerShops.hasAccessToShop(parent, getPlayer()) then
+        return false
+    end
+    return true
 end
 
 local recipes = ScriptManager.instance:getAllRecipes()
