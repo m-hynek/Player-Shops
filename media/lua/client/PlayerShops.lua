@@ -209,10 +209,10 @@ function ISInventoryTransferAction:isValid()
     return old_isValid(self)
 end
 
-__PlayerShopsOnTest = {}
+_PlayerShopsOnTest = {}
 
 ---@param item InventoryItem
-__PlayerShopsOnTest.HasAccessToShop = function(item)
+_PlayerShopsOnTest.HasAccessToShop = function(item)
     local parent = item:getContainer():getParent()
     if parent and not hasAccessToShop(parent, getPlayer()) then
         return false

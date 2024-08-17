@@ -2,7 +2,7 @@
 local generateOnTest = function(func)
     ---@param item InventoryItem
     return function(item, ...)
-        if not __PlayerShopsOnTest.HasAccessToShop(item) then return false end
+        if not _PlayerShopsOnTest.HasAccessToShop(item) then return false end
         return func(item, ...)
     end
 end
@@ -29,12 +29,12 @@ for i = 0, recipes:size()-1 do
         local func = getFunctionByName(onTest)
         if func then
             local newName = string.gsub(onTest, "%.", "%$")
-            __PlayerShopsOnTest[newName] = generateOnTest(func)
-            recipe:setLuaTest("__PlayerShopsOnTest." .. newName)
+            _PlayerShopsOnTest[newName] = generateOnTest(func)
+            recipe:setLuaTest("_PlayerShopsOnTest." .. newName)
         else
-            recipe:setLuaTest("__PlayerShopsOnTest.HasAccessToShop")
+            recipe:setLuaTest("_PlayerShopsOnTest.HasAccessToShop")
         end
     else
-        recipe:setLuaTest("__PlayerShopsOnTest.HasAccessToShop")
+        recipe:setLuaTest("_PlayerShopsOnTest.HasAccessToShop")
     end
 end
